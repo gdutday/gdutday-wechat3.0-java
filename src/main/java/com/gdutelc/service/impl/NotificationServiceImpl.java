@@ -12,6 +12,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class NotificationServiceImpl implements NotificationService {
+    /***
+     * test接口显示
+     * @return
+     */
     @Override
     public HiGdutDays getHiMessage() {
         return new HiGdutDays("GdutDaysV3");
