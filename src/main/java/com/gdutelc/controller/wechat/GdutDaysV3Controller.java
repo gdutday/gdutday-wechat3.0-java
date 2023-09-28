@@ -28,8 +28,8 @@ public class GdutDaysV3Controller {
         return notificationService.getHiMessage();
     }
 
-    @PostMapping("/login")
-    public AjaxResult login(@RequestBody  GdutDayWechatUser gdutDayWechatUser) {
+    @PostMapping("/¬login")
+    public AjaxResult login(@RequestBody GdutDayWechatUser gdutDayWechatUser) {
 
         return AjaxResult.success();
     }
