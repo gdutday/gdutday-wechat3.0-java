@@ -3,6 +3,7 @@ package com.gdutelc.framework.domain;
 import com.gdutelc.framework.common.HttpStatus;
 import com.gdutelc.utils.StringUtils;
 
+import java.io.Serial;
 import java.util.HashMap;
 
 /**
@@ -14,6 +15,7 @@ import java.util.HashMap;
  */
 public class AjaxResult extends HashMap<String, Object>
 {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /** 状态码 */

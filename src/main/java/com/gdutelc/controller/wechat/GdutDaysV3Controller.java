@@ -21,7 +21,7 @@ public class GdutDaysV3Controller {
     /**
      * 服务显示
      *
-     * @return
+     * @return 显示是否运行状态
      */
     @GetMapping("/test")
     public Object test() {

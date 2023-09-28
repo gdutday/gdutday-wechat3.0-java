@@ -1,6 +1,5 @@
 package com.gdutelc.service.adapter;
 
-import com.gdutelc.common.constant.LoginConstant;
 import com.gdutelc.common.constant.RoleConstant;
 import com.gdutelc.framework.domain.VO.GdutDayWechatUser;
 import com.gdutelc.framework.exception.ServiceException;
@@ -35,14 +34,14 @@ public abstract class AbstractLoginAdapter implements LoginService {
     /**
      * 本科教务管理
      *
-     * @param gdutDayWechatUser
+     * @param gdutDayWechatUser 小程序登录VO
      */
     public abstract void jxfwLogin(GdutDayWechatUser gdutDayWechatUser);
 
     /**
      * 统一登录
      *
-     * @param gdutDayWechatUser
+     * @param gdutDayWechatUser 小程序登录VO
      */
     public abstract void ehallLogin(GdutDayWechatUser gdutDayWechatUser);
 
