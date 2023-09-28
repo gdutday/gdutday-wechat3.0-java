@@ -1,7 +1,10 @@
 package com.gdutelc.controller.wechat;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.gdutelc.framework.domain.AjaxResult;
+import com.gdutelc.framework.domain.VO.GdutDayWechatUser;
+import com.gdutelc.service.impl.NotificationServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author Ymri
@@ -10,7 +13,25 @@ import org.springframework.web.bind.annotation.RestController;
  * GdutDaysV3Controller
  */
 @RestController
-@RequestMapping("/gdutDay2")
+@RequestMapping("/gdutDay3")
 public class GdutDaysV3Controller {
+    @Autowired
+    private NotificationServiceImpl notificationService;
 
+    /**
+     * 服务显示
+     *
+     * @return
+     */
+    @GetMapping("/test")
+    public Object test() {
+        return notificationService.getHiMessage();
+    }
+
+    @PostMapping("/login")
+    public AjaxResult login(@RequestBody  GdutDayWechatUser gdutDayWechatUser) {
+
+        return AjaxResult.success();
+    }
 }
+

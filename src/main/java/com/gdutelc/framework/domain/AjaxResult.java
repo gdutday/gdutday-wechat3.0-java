@@ -10,6 +10,7 @@ import java.util.HashMap;
  * @version 1.0
  * @since 2023/9/27 21:35
  * AjaxResult
+ * 系统正常返回是AjaxResult，为了兼容V2版本，会经过特殊处理
  */
 public class AjaxResult extends HashMap<String, Object>
 {
