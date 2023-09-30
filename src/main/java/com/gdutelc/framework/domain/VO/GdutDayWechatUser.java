@@ -24,7 +24,7 @@ public class GdutDayWechatUser implements Serializable {
 
     @ApiModelProperty(value = "用户名")
     @NotEmpty(message = "账号不能为空")
-    private String name;
+    private String user;
 
     @ApiModelProperty(value = "密码")
     @NotEmpty(message = "密码不能为空")
@@ -44,8 +44,8 @@ public class GdutDayWechatUser implements Serializable {
     private Integer loginType;
 
 
-    public GdutDayWechatUser(String name, String password, String code, Integer userType, Integer loginType) {
-        this.name = name;
+    public GdutDayWechatUser(String user, String password, String code, Integer userType, Integer loginType) {
+        this.user = user;
         this.password = password;
         this.code = code;
         this.userType = userType;
@@ -56,8 +56,8 @@ public class GdutDayWechatUser implements Serializable {
         this.userType = userType;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUser(String user) {
+        this.user = user;
     }
 
     public void setPassword(String password) {

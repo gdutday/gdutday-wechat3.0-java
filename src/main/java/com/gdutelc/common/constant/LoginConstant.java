@@ -4,7 +4,7 @@ package com.gdutelc.common.constant;
  * @author Ymri
  * @version 1.0
  * @since 2023/9/29 01:17
- * LoginConstant
+ * LoginConstant 登录
  */
 public class LoginConstant {
     public final static Integer JXFW_LOGIN = 1;
