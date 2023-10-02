@@ -17,7 +17,7 @@ import java.util.ArrayList;
  * GdutDaServiceImpl
  */
 @Service
-public class GdutDaServiceImpl implements GdutDayService {
+public class GdutDayServiceImpl implements GdutDayService {
     /**
      * 获得用户信息
      *
