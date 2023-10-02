@@ -1,9 +1,8 @@
 package com.gdutelc.service.adapter;
 
-import com.beust.ah.A;
 import com.gdutelc.common.constant.RoleConstant;
-import com.gdutelc.framework.domain.AjaxResult;
-import com.gdutelc.framework.domain.VO.GdutDayWechatUser;
+import com.gdutelc.domain.DTO.LoginDto;
+import com.gdutelc.domain.GdutDayWechatUser;
 import com.gdutelc.framework.exception.ServiceException;
 import com.gdutelc.service.LoginService;
 
@@ -19,7 +18,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
 
 
     @Override
-    public AjaxResult gdutDayWechatUserLogin(@NotNull GdutDayWechatUser gdutDayWechatUser) {
+    public LoginDto gdutDayWechatUserLogin(@NotNull GdutDayWechatUser gdutDayWechatUser) {
         switch (gdutDayWechatUser.getLoginType()) {
             case 1 -> {
                 // 只有本科才能使用教务系统直接登录
@@ -32,7 +31,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
                 return ehallLogin(gdutDayWechatUser);
             }
         }
-         return AjaxResult.error();
+         return null;
     }
 
 
@@ -41,14 +40,14 @@ public abstract class AbstractLoginAdapter implements LoginService {
      *
      * @param gdutDayWechatUser 小程序登录VO
      */
-    public abstract AjaxResult jxfwLogin(GdutDayWechatUser gdutDayWechatUser);
+    public abstract LoginDto jxfwLogin(GdutDayWechatUser gdutDayWechatUser);
 
     /**
      * 统一登录
      *
      * @param gdutDayWechatUser 小程序登录VO
      */
-    public abstract AjaxResult ehallLogin(GdutDayWechatUser gdutDayWechatUser);
+    public abstract LoginDto ehallLogin(GdutDayWechatUser gdutDayWechatUser);
 
 
 }

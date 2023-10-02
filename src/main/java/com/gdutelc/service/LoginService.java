@@ -1,7 +1,7 @@
 package com.gdutelc.service;
 
-import com.gdutelc.framework.domain.AjaxResult;
-import com.gdutelc.framework.domain.VO.GdutDayWechatUser;
+import com.gdutelc.domain.DTO.LoginDto;
+import com.gdutelc.domain.GdutDayWechatUser;
 
 /**
  * @author Ymri
@@ -17,6 +17,6 @@ public interface LoginService {
      *
      * @param gdutDayWechatUser
      */
-    public AjaxResult gdutDayWechatUserLogin(GdutDayWechatUser gdutDayWechatUser);
+    public LoginDto gdutDayWechatUserLogin(GdutDayWechatUser gdutDayWechatUser);
 
 }

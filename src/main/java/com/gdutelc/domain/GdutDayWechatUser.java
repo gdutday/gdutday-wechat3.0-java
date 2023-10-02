@@ -1,4 +1,4 @@
-package com.gdutelc.framework.domain.VO;
+package com.gdutelc.domain;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -8,7 +8,6 @@ import lombok.ToString;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -43,28 +42,16 @@ public class GdutDayWechatUser implements Serializable {
     @Min(value = 1, message = "登录类型错误")
     private Integer loginType;
 
+    @ApiModelProperty(value = "jSessionid, 兼容V2")
+    private String jSessionId;
 
-    public GdutDayWechatUser(String user, String password, String code, Integer userType, Integer loginType) {
+
+    public GdutDayWechatUser(String user, String password, String code, Integer userType, Integer loginType, String jSessionId) {
         this.user = user;
         this.password = password;
         this.code = code;
         this.userType = userType;
         this.loginType = loginType;
-    }
-
-    public void setUserType(Integer userType) {
-        this.userType = userType;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
+        this.jSessionId = jSessionId;
     }
 }

@@ -1,8 +1,8 @@
 package com.gdutelc.service.impl;
 
 import com.gdutelc.common.constant.UrlConstant;
-import com.gdutelc.framework.domain.AjaxResult;
-import com.gdutelc.framework.domain.VO.GdutDayWechatUser;
+import com.gdutelc.domain.DTO.LoginDto;
+import com.gdutelc.domain.GdutDayWechatUser;
 import com.gdutelc.service.adapter.AbstractLoginAdapter;
 import com.gdutelc.utils.GdutDayCookieJar;
 import com.gdutelc.utils.JsoupUtils;
@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * @author Ymri
@@ -30,17 +29,17 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
     private OkHttpUtils okHttpUtils;
 
     @Override
-    public AjaxResult jxfwLogin(GdutDayWechatUser gdutDayWechatUser) {
+    public LoginDto jxfwLogin(GdutDayWechatUser gdutDayWechatUser) {
         /**
          * 1.本科登录
          * 2.自动身份
          * 3.通过认证
          */
-        return AjaxResult.success();
+        return null;
     }
 
     @Override
-    public AjaxResult ehallLogin(GdutDayWechatUser gdutDayWechatUser) {
+    public LoginDto ehallLogin(GdutDayWechatUser gdutDayWechatUser) {
         /**
          * 全局共用一个okhttp，但是每次都复用okhttpclinent,
          * 严格使用工具new okhttp,登录的时候直接传入new的cookie,最后记得释放和清空
@@ -52,19 +51,19 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
          * 4.通过认证
          */
         try {
-            GdutDayCookieJar cookieJar=new GdutDayCookieJar();
+            GdutDayCookieJar cookieJar = new GdutDayCookieJar();
             OkHttpClient myokHttpClient = okHttpUtils.makeOkhttpClient(cookieJar);
             Response response = okHttpUtils.get(myokHttpClient, UrlConstant.GRADUATE_LOGIN);
             //response.body().string();
             assert response.body() != null;
             String html = response.body().string();
             if (!okHttpUtils.checkStatus(html)) {
-                return AjaxResult.error("服务器出现风控，请稍后再试！");
+                return null;
             }
             response.close();
             RequestBody requestBody = JsoupUtils.getLoginForm(html, gdutDayWechatUser);
 
-            // 发送登录请求
+            // 发送登录请求, 待完善...
             response = okHttpUtils.postByFormUrl(myokHttpClient, UrlConstant.GRADUATE_LOGIN, requestBody);
             // 从cookieJar 里面拿到登录过的cookies，然后返回
             Headers headers = response.headers();
@@ -72,7 +71,7 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return AjaxResult.success();
+        return null;
     }
 
 

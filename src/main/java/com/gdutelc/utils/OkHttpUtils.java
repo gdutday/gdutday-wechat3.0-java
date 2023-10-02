@@ -29,7 +29,7 @@ public class OkHttpUtils {
      * @return
      */
     public OkHttpClient makeOkhttpClient(GdutDayCookieJar cookieManager){
-        // 需要复用改写cookie，添加 存储
+        // 需要复用改写cookie，添加 存储 后续会再优化 连接池和新建的问题
         return okHttpClient.newBuilder()
                 .cookieJar(cookieManager)
                 .build();

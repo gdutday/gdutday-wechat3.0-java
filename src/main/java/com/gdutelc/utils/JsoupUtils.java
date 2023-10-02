@@ -1,16 +1,14 @@
 package com.gdutelc.utils;
 
-import com.gdutelc.framework.domain.VO.GdutDayWechatUser;
+import com.gdutelc.domain.GdutDayWechatUser;
 import okhttp3.FormBody;
 import okhttp3.RequestBody;
-import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
