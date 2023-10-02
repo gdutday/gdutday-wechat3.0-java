@@ -4,9 +4,7 @@ import com.gdutelc.domain.DTO.ExamScoreDto;
 import com.gdutelc.domain.DTO.ExaminationDto;
 import com.gdutelc.domain.DTO.ScheduleInfoDto;
 import com.gdutelc.domain.DTO.UserInfoDto;
-import com.gdutelc.domain.VO.BasicVO;
 import com.gdutelc.domain.VO.LibQrVO;
-import com.gdutelc.framework.domain.AjaxResult;
 import com.gdutelc.service.GdutDayService;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +25,7 @@ public class GdutDaServiceImpl implements GdutDayService {
      * @return 用户dto
      */
     @Override
-    public UserInfoDto getUserInfo(String cookies) {
+    public UserInfoDto getUserInfo(String cookies,Integer userType) {
         return null;
     }
 
@@ -38,7 +36,7 @@ public class GdutDaServiceImpl implements GdutDayService {
      * @return 课表 Dto
      */
     @Override
-    public ArrayList<ScheduleInfoDto> getScheduleInfo(String cookies) {
+    public ArrayList<ScheduleInfoDto> getScheduleInfo(String cookies,Integer userType) {
         return null;
     }
 
@@ -48,7 +46,7 @@ public class GdutDaServiceImpl implements GdutDayService {
      * @param cookies cookies
      */
     @Override
-    public ArrayList<ExamScoreDto> getExamScore(String cookies) {
+    public ArrayList<ExamScoreDto> getExamScore(String cookies,Integer userType) {
         return null;
     }
 
@@ -70,7 +68,7 @@ public class GdutDaServiceImpl implements GdutDayService {
      * @return ArrayList
      */
     @Override
-    public ArrayList<ExaminationDto> getExaminationInfo(String cookies) {
+    public ArrayList<ExaminationDto> getExaminationInfo(String cookies,Integer userType) {
         return null;
     }
 }

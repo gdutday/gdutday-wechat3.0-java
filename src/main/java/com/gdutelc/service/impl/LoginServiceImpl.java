@@ -8,7 +8,10 @@ import com.gdutelc.utils.GdutDayCookieJar;
 import com.gdutelc.utils.JsoupUtils;
 import com.gdutelc.utils.OkHttpUtils;
 import jakarta.annotation.Resource;
-import okhttp3.*;
+import okhttp3.Headers;
+import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -24,7 +27,6 @@ import java.io.IOException;
 @Service
 public class LoginServiceImpl extends AbstractLoginAdapter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LoginServiceImpl.class);
     @Resource
     private OkHttpUtils okHttpUtils;
 
@@ -43,7 +45,6 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
         /**
          * 全局共用一个okhttp，但是每次都复用okhttpclinent,
          * 严格使用工具new okhttp,登录的时候直接传入new的cookie,最后记得释放和清空
-         *
          * 除登录外其他可直接复用全局的，需要先清除
          * 1.拿到页面参数
          * 2.通过登录

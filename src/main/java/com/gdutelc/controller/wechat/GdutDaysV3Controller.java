@@ -45,9 +45,9 @@ public class GdutDaysV3Controller {
 
     @ApiModelProperty(value = "获得图书馆二维码")
     @GetMapping("/libQr")
-    public AjaxResult libQr(@RequestParam("stuId") String stuId,
-                            @RequestParam("width") Integer width,
-                            @RequestParam("height") Integer height) {
+    public AjaxResult libQr(@RequestParam(name = "stuId") String stuId,
+                            @RequestParam(name = "width") Integer width,
+                            @RequestParam(name = "height") Integer height) {
         LibQrVO libQrVO = new LibQrVO(stuId, width, height);
         String qr = gdutDayService.getLibQr(libQrVO);
         return AjaxResult.success(qr);
@@ -56,26 +56,30 @@ public class GdutDaysV3Controller {
 
     @ApiModelProperty(value = "获得课表信息")
     @GetMapping("/schedule")
-    public AjaxResult schedule(String cookies) {
-        return AjaxResult.success(gdutDayService.getScheduleInfo(cookies));
+    public AjaxResult schedule(@RequestParam(name = "cookies") String cookies,
+                               @RequestParam(name = "userType") Integer userType) {
+        return AjaxResult.success(gdutDayService.getScheduleInfo(cookies, userType));
     }
 
     @ApiModelProperty(value = "获得成绩")
     @GetMapping("/score")
-    public AjaxResult exam(String cookies) {
-        return AjaxResult.success(gdutDayService.getExamScore(cookies));
+    public AjaxResult exam(@RequestParam(name = "cookies") String cookies,
+                           @RequestParam(name = "userType") Integer userType) {
+        return AjaxResult.success(gdutDayService.getExamScore(cookies, userType));
     }
 
     @ApiModelProperty(value = "获得用户信息")
     @GetMapping("/userInfo")
-    public AjaxResult userInfo(String cookies) {
-        return AjaxResult.success(gdutDayService.getUserInfo(cookies));
+    public AjaxResult userInfo(@RequestParam(name = "cookies") String cookies,
+                               @RequestParam(name = "userType") Integer userType) {
+        return AjaxResult.success(gdutDayService.getUserInfo(cookies, userType));
     }
 
     @ApiModelProperty(value = "获得考试安排")
     @GetMapping("/examination")
-    public AjaxResult examination(String cookies) {
-        return AjaxResult.success(gdutDayService.getExaminationInfo(cookies));
+    public AjaxResult examination(@RequestParam(name = "cookies") String cookies,
+                                  @RequestParam(name = "userType") Integer userType) {
+        return AjaxResult.success(gdutDayService.getExaminationInfo(cookies, userType));
     }
 
 

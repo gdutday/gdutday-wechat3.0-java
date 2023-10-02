@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 /**
  * @author Ymri
@@ -26,9 +27,15 @@ public class LoginDto {
     private String weCookies;
 
 
-    public LoginDto(String campus, String weCookies) {
+    @ApiModelProperty(value = "用户身份类型，1-学生，2-研究生，3-老师")
+    @Max(value = 3, message = "登录类型错误")
+    @Min(value = 1, message = "登录类型错误")
+    private Integer userType;
+
+
+    public LoginDto(String campus, String weCookies, Integer userType) {
         this.campus = campus;
         this.weCookies = weCookies;
+        this.userType = userType;
     }
-
 }

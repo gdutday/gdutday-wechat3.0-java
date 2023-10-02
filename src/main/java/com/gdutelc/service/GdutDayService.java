@@ -4,9 +4,7 @@ import com.gdutelc.domain.DTO.ExamScoreDto;
 import com.gdutelc.domain.DTO.ExaminationDto;
 import com.gdutelc.domain.DTO.ScheduleInfoDto;
 import com.gdutelc.domain.DTO.UserInfoDto;
-import com.gdutelc.domain.VO.BasicVO;
 import com.gdutelc.domain.VO.LibQrVO;
-import com.gdutelc.framework.domain.AjaxResult;
 
 import java.util.ArrayList;
 
@@ -24,7 +22,7 @@ public interface GdutDayService {
      * @param cookies cookies
      * @return UserInfoDto
      */
-    public UserInfoDto getUserInfo(String  cookies);
+     UserInfoDto getUserInfo(String  cookies,Integer userType);
 
 
     /**
@@ -33,7 +31,7 @@ public interface GdutDayService {
      * @param cookies cookies
      * @return ArrayList<ScheduleInfoDto>
      */
-    public ArrayList<ScheduleInfoDto> getScheduleInfo(String cookies);
+     ArrayList<ScheduleInfoDto> getScheduleInfo(String cookies,Integer userType);
 
 
     /**
@@ -42,7 +40,7 @@ public interface GdutDayService {
      * @param cookies cookies
      * @return ArrayList
      */
-    public ArrayList<ExamScoreDto> getExamScore(String cookies);
+     ArrayList<ExamScoreDto> getExamScore(String cookies,Integer userType);
 
     /**
      * 获得图书馆二维码
@@ -50,7 +48,7 @@ public interface GdutDayService {
      * @param libQrVO 学号，宽度，高度
      * @return 返回图片的Base64编码
      */
-    public String getLibQr(LibQrVO libQrVO);
+     String getLibQr(LibQrVO libQrVO);
 
     /**
      * 获得学生考试安排，仅本科生使用,研究生课堂公布
@@ -58,5 +56,5 @@ public interface GdutDayService {
      * @param cookies cookies
      * @return ArrayList
      */
-    public ArrayList<ExaminationDto> getExaminationInfo(String cookies);
+     ArrayList<ExaminationDto> getExaminationInfo(String cookies,Integer userType);
 }
