@@ -63,7 +63,7 @@ public class OkHttpUtils {
      */
     public Response postByFormUrl(OkHttpClient myOkhttpClient,String url, RequestBody postData) {
         Request request = new Request.Builder()
-                .url(UrlConstant.GRADUATE_LOGIN)
+                .url(url)
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/114.0")
                 .post(postData)

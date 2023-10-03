@@ -6,10 +6,14 @@ import com.gdutelc.utils.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.file.AccessDeniedException;
 
@@ -19,6 +23,8 @@ import java.nio.file.AccessDeniedException;
  * @since 2023/9/27 21:30
  * GlobalExceptionHandler
  */
+@ControllerAdvice(annotations = {RestController.class, Controller.class})
+@ResponseBody
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);

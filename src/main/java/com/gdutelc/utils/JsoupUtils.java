@@ -75,7 +75,7 @@ public class JsoupUtils {
      * @return
      * @throws UnsupportedEncodingException
      */
-    public static RequestBody map2PostUrlCodeString(Map<String, String> mapData) throws UnsupportedEncodingException {
+    public static RequestBody map2PostUrlCodeString(Map<String, String> mapData) {
         FormBody.Builder builder = new FormBody.Builder();
 
         for (String key : mapData.keySet()) {

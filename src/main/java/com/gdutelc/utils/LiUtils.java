@@ -8,12 +8,11 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-import org.apache.http.HttpEntity;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpEntity;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -23,6 +22,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Hashtable;
 import java.util.Properties;
@@ -43,13 +43,6 @@ public class LiUtils {
 
     private static final String CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
 
-    public static JSONObject entityToJsonObject(HttpEntity entity) {
-        try {
-            return JSON.parseObject(EntityUtils.toString(entity, "utf-8"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     /**
      * 使用 AES 加密和 CBC 模式加密给定的明文字符串。
@@ -59,29 +52,42 @@ public class LiUtils {
      * @return 加密后的字符串，或者在出现异常时返回 null
      */
     public static String cbcEncrypt(String plaintext, String key) {
+        String iv = "Jisniwqjwqjwqjww"; // 长度固定为 aes.BlockSize ，16位
+        // 自动拓宽
+        String s = "J69IVxcXqvqNhvk1J69IVxcXqvqNhvk1J69IVxcXqvqNhvk1J69IVxcXqvqNhvk1" + plaintext;
         try {
-            // 长度固定为 AES 的块大小，16位
-            String iv = "Jisniwqjwqjwqjww";
-            // 自动拓宽
-            String s = "J69IVxcXqvqNhvk1J69IVxcXqvqNhvk1J69IVxcXqvqNhvk1J69IVxcXqvqNhvk1" + plaintext;
-            SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
-            IvParameterSpec ivParameterSpec = new IvParameterSpec(iv.getBytes(StandardCharsets.UTF_8));
-            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
-            byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(encryptedBytes);
+            return Encrypt(s, key, iv);
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e);
         }
     }
 
-    public static String getUrlFromProFile(String key) throws IOException {
-        Properties properties = new Properties();
-        Resource resource = new ClassPathResource("urls/usingUrl.properties");
-        properties.load(resource.getInputStream());
-        String url = (String) properties.get(key);
-        return url;
+    public static String Encrypt(String plainText, String key, String iv) throws Exception {
+        byte[] data = aesCBCEncrypt(plainText.getBytes(), key.getBytes(), iv.getBytes());
+        return Base64.getEncoder().encodeToString(data);
+    }
+
+    public static byte[] aesCBCEncrypt(byte[] plaintext, byte[] key, byte[] iv) throws Exception {
+        // AES
+        SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
+
+        // CBC 加密
+        byte[] encrypted = cipher.doFinal(plaintext);
+        return encrypted;
+    }
+
+    // PKCS7 填充
+    public static byte[] paddingPKCS7(byte[] plaintext, int blockSize) {
+        int paddingSize = blockSize - (plaintext.length % blockSize);
+        byte[] paddingText = new byte[paddingSize];
+        Arrays.fill(paddingText, (byte) paddingSize);
+        byte[] paddedData = new byte[plaintext.length + paddingSize];
+        System.arraycopy(plaintext, 0, paddedData, 0, plaintext.length);
+        System.arraycopy(paddingText, 0, paddedData, plaintext.length, paddingSize);
+        return paddedData;
     }
 
     public static String makeBase64(byte[] bytes) {
@@ -180,5 +186,7 @@ public class LiUtils {
         }
         return "";
     }
+
+
 
 }
