@@ -1,9 +1,6 @@
 package com.gdutelc.service;
 
-import com.gdutelc.domain.DTO.ExamScoreDto;
-import com.gdutelc.domain.DTO.ExaminationDto;
-import com.gdutelc.domain.DTO.ScheduleInfoDto;
-import com.gdutelc.domain.DTO.UserInfoDto;
+import com.gdutelc.domain.DTO.*;
 import com.gdutelc.domain.VO.LibQrVO;
 
 import java.util.ArrayList;
@@ -57,4 +54,11 @@ public interface GdutDayService {
      * @return ArrayList
      */
      ArrayList<ExaminationDto> getExaminationInfo(String cookies,Integer userType);
+
+    /**
+     * 获取登录验证码
+     * @param jSessionId
+     * @return
+     */
+    VerCodeDto sendVerification(String jSessionId);
 }

@@ -1,13 +1,21 @@
 package com.gdutelc.service.impl;
 
-import com.gdutelc.domain.DTO.ExamScoreDto;
-import com.gdutelc.domain.DTO.ExaminationDto;
-import com.gdutelc.domain.DTO.ScheduleInfoDto;
-import com.gdutelc.domain.DTO.UserInfoDto;
+import com.alibaba.fastjson.JSONObject;
+import com.gdutelc.domain.DTO.*;
 import com.gdutelc.domain.VO.LibQrVO;
+import com.gdutelc.framework.exception.ServiceException;
 import com.gdutelc.service.GdutDayService;
+import com.gdutelc.utils.GdutDayCookieJar;
+import com.gdutelc.utils.LiUtils;
+import com.gdutelc.utils.OkHttpUtils;
+import com.gdutelc.utils.StringUtils;
+import jakarta.annotation.Resource;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -18,6 +26,9 @@ import java.util.ArrayList;
  */
 @Service
 public class GdutDayServiceImpl implements GdutDayService {
+
+    @Resource
+    private OkHttpUtils okHttpUtils;
     /**
      * 获得用户信息
      *
@@ -70,5 +81,32 @@ public class GdutDayServiceImpl implements GdutDayService {
     @Override
     public ArrayList<ExaminationDto> getExaminationInfo(String cookies,Integer userType) {
         return null;
+    }
+
+    @Override
+    public VerCodeDto sendVerification(String jSessionId) {
+        GdutDayCookieJar gdutDayCookieJar = new GdutDayCookieJar();
+        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient(gdutDayCookieJar);
+        Response response = null;
+        if(StringUtils.isEmpty(jSessionId)){
+            response = okHttpUtils.get(okHttpClient, "https://jxfw.gdut.edu.cn/yzm" + "?d=" + System.currentTimeMillis());
+        }else {
+            response = okHttpUtils.get(okHttpClient, "https://jxfw.gdut.edu.cn/yzm" + "?d=" + System.currentTimeMillis(),jSessionId);
+        }
+        if(response.code()!=200){
+            throw new ServiceException("获取验证码失败", response.code());
+        }
+        String header = response.header("Set-Cookie");
+        if(StringUtils.isEmpty(header)){
+            header = jSessionId;
+        }
+        String base64 = null;
+        try {
+            byte[] bytes = response.body().bytes();
+            base64 = LiUtils.makeBase64(bytes);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return new VerCodeDto(base64,header);
     }
 }

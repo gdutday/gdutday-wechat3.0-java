@@ -43,6 +43,24 @@ public class OkHttpUtils {
     public  Response get(OkHttpClient myOkHttpClient,String url) {
         Request request = new Request.Builder()
                 .url(url)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/114.0")
+                .build();
+        try {
+            Response response = myOkHttpClient.newCall(request).execute();
+            //response.body().string();
+            assert response.body() != null;
+            return response;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public  Response get(OkHttpClient myOkHttpClient,String url,String jSessionId) {
+        Request request = new Request.Builder()
+                .url(url)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/114.0")
+                .header("Cookie",jSessionId)
                 .build();
         try {
             Response response = myOkHttpClient.newCall(request).execute();

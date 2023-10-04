@@ -62,9 +62,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
      *
      * @param gdutDayWechatUser 小程序登录VO
      */
-    public LoginDto jxfwLogin(GdutDayWechatUser gdutDayWechatUser) {
-        return null;
-    }
+    public abstract LoginDto jxfwLogin(GdutDayWechatUser gdutDayWechatUser);
 
     /**
      * 统一登录

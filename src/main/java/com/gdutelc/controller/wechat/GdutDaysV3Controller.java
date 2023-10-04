@@ -9,6 +9,7 @@ import com.gdutelc.service.impl.LoginServiceImpl;
 import com.gdutelc.service.impl.NotificationServiceImpl;
 import io.swagger.annotations.ApiModelProperty;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +44,13 @@ public class GdutDaysV3Controller {
         return AjaxResult.success(loginDto);
     }
 
+    @ApiModelProperty(value = "获取登录验证码")
+    @GetMapping("/sendVer")
+    public AjaxResult sendVerification(HttpServletRequest request) {
+        String jSessionId = request.getParameter("jSessionId");
+        gdutDayService.sendVerification(jSessionId);
+        return null;
+    }
     @ApiModelProperty(value = "获得图书馆二维码")
     @GetMapping("/libQr")
     public AjaxResult libQr(@RequestParam(name = "stuId") String stuId,

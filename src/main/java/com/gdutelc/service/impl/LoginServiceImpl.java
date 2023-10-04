@@ -19,11 +19,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.util.*;
-
-import static com.gdutelc.framework.common.HttpStatus.SUCCESS;
+import static com.gdutelc.common.constant.UrlConstant.*;
 
 /**
  * @author Ymri
@@ -38,19 +36,36 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
     @Resource
     private OkHttpUtils okHttpUtils;
 
+
     @Override
     public LoginDto jxfwLogin(GdutDayWechatUser gdutDayWechatUser) {
-        /**
-         * 1.本科登录
-         * 2.自动身份
-         * 3.通过认证
-         */
-        return null;
+        GdutDayCookieJar gdutDayCookieJar = new GdutDayCookieJar();
+        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient(gdutDayCookieJar);
+        HashMap<String, String> map = new HashMap<>(6);
+        map.put("account",gdutDayWechatUser.getUser());
+        map.put("pwd",gdutDayWechatUser.getPassword());
+        map.put("verifycode",gdutDayWechatUser.getCode());
+        RequestBody requestBody = JsoupUtils.map2PostUrlCodeString(map);
+        Request request = new Request.Builder()
+                .header("Cookie", gdutDayWechatUser.getJSessionId())
+                .post(requestBody)
+                .url("https://jxfw.gdut.edu.cn/new/login")
+                .build();
+        Response response = null;
+        try {
+            response = okHttpClient.newCall(request).execute();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        if(response.code()!=200){
+            throw new ServiceException("账号，密码或验证码错误",response.code());
+        }
+        return new LoginDto("大学城校区",gdutDayWechatUser.getJSessionId(),gdutDayWechatUser.getUserType());
     }
 
     @Override
     public LoginDto graduateEhallLogin(GdutDayWechatUser gdutDayWechatUser, OkHttpClient myokHttpClient) throws IOException {
-        Response response = okHttpUtils.get(myokHttpClient, UrlConstant.GRADUATE_LOGIN);
+        Response response = okHttpUtils.get(myokHttpClient, GRADUATE_LOGIN);
         //response.body().string();
         assert response.body() != null;
         String html = response.body().string();
@@ -60,20 +75,28 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
         response.close();
         RequestBody requestBody = JsoupUtils.getLoginForm(html, gdutDayWechatUser);
         // 发送登录请求, 待完善...
-        response = okHttpUtils.postByFormUrl(myokHttpClient, UrlConstant.GRADUATE_LOGIN, requestBody);
+        response = okHttpUtils.postByFormUrl(myokHttpClient, GRADUATE_LOGIN, requestBody);
         // 从cookieJar 里面拿到登录过的cookies，然后返回
         // 从cookieJar 里面拿到登录过的cookies，然后返回
         if(response.code()!=200){
-            throw new ServiceException("账号或密码错误",401);
+            throw new ServiceException("账号或密码错误", response.code());
         }
-        List<Cookie> cookies = myokHttpClient.cookieJar().loadForRequest(HttpUrl.parse(UrlConstant.UNDER_GRADUATE_LOGIN));
+        //获取授权
+        Request request = new Request.Builder()
+                .url(JWT_URL)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/114.0")
+                .post(requestBody)
+                .build();
+        //有bug，没有返回响应
+        myokHttpClient.newCall(request).execute();
+        List<Cookie> cookies = myokHttpClient.cookieJar().loadForRequest(HttpUrl.parse(UNDER_GRADUATE_LOGIN));
         String cookieStr = "";
         for (Cookie cookie : cookies) {
             cookieStr += cookie.name()+":"+cookie.value()+";";
         }
-
         // 返回DTO还没统一，先全部丢到AjaxResult
-        return null;
+        return new LoginDto("大学城校区",cookieStr,gdutDayWechatUser.getUserType());
     }
 
     @Override
@@ -114,11 +137,11 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
         tempMap.put("password", LiUtils.cbcEncrypt(gdutDayWechatUser.getPassword(),pwdEncryptSalt));
         RequestBody requestBody = JsoupUtils.map2PostUrlCodeString(tempMap);
         // 发送登录请求, 待完善...
-        Response response1 = okHttpUtils.postByFormUrl(myokHttpClient, UrlConstant.UNDER_GRADUATE_LOGIN, requestBody);
+        Response response1 = okHttpUtils.postByFormUrl(myokHttpClient, UNDER_GRADUATE_LOGIN, requestBody);
         // 从cookieJar 里面拿到登录过的cookies，然后返回
         String result = response1.body().string();
         if(response1.code()!=200){
-            throw new ServiceException("账号或密码错误",401);
+            throw new ServiceException("账号或密码错误",response1.code());
         }
         List<Cookie> cookies = myokHttpClient.cookieJar().loadForRequest(HttpUrl.parse("https://authserver.gdut.edu.cn/authserver/login?service=https%3A%2F%2Fjxfw.gdut.edu.cn%2Fnew%2FssoLogin"));
         String cookieStr = "";
@@ -126,7 +149,7 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
             cookieStr += cookie.name()+":"+cookie.value()+";";
         }
         // 返回DTO还没统一，先全部丢到AjaxResult
-        return new LoginDto("本科生",cookieStr,gdutDayWechatUser.getUserType());
+        return new LoginDto("大学城校区",cookieStr,gdutDayWechatUser.getUserType());
     }
 
     @Override

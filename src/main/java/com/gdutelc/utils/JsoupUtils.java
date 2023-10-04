@@ -79,13 +79,9 @@ public class JsoupUtils {
         FormBody.Builder builder = new FormBody.Builder();
 
         for (String key : mapData.keySet()) {
-            Object obj = mapData.get(key);
-            if (obj != null) {
-                builder.addEncoded(key, mapData.get(key).toString());
-            } else {
-                builder.addEncoded(key, "");
-            }
+            builder.add(key, mapData.get(key));
         }
+        builder.addEncoded("1","1");
         return builder.build();
     }
 }
