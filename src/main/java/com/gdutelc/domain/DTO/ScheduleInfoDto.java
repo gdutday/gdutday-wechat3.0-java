@@ -1,7 +1,6 @@
 package com.gdutelc.domain.DTO;
 
 import com.alibaba.fastjson2.annotation.JSONField;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,6 +40,10 @@ public class ScheduleInfoDto implements Serializable {
     @JSONField(name = "wd")
     private String courseDay;
 
+    @ApiModelProperty("节次")
+    @JSONField(name = "cs")
+    private String courseSection;
+
     @ApiModelProperty("课程描述")
     @JSONField(name = "cc")
     private String courseDescription;
@@ -53,14 +56,16 @@ public class ScheduleInfoDto implements Serializable {
     @JSONField(name = "xs")
     private String courseEndWeek;
 
-    public ScheduleInfoDto(String courseName, String coursePlace, String courseTeacher, String courseWeek, String courseDay, String courseDescription, String color, String courseEndWeek) {
+    public ScheduleInfoDto(String courseName, String coursePlace, String courseTeacher, String courseWeek, String courseDay, String courseSection, String courseDescription, String color, String courseEndWeek) {
         this.courseName = courseName;
         this.coursePlace = coursePlace;
         this.courseTeacher = courseTeacher;
         this.courseWeek = courseWeek;
         this.courseDay = courseDay;
+        this.courseSection = courseSection;
         this.courseDescription = courseDescription;
         this.color = color;
         this.courseEndWeek = courseEndWeek;
     }
+
 }
