@@ -17,6 +17,10 @@ public class UrlConstant {
 
     // 本科生登录链接
     public static final String UNDER_GRADUATE_LOGIN = "https://authserver.gdut.edu.cn/authserver/login?service=https%3A%2F%2Fjxfw.gdut.edu.cn%2Fnew%2FssoLogin";
+    //本科生获取学期链接
+    public static final String UNDER_CLAZZ_TERM = "https://jxfw.gdut.edu.cn/xsbjkbcx!xsbjkbMain.action";
+    //本科生获取课表链接
+    public static final String UNDER_CLAZZ = "https://jxfw.gdut.edu.cn/xsgrkbcx!getDataList.action";
     // 研究生登录链接
     public static final String GRADUATE_LOGIN = "https://authserver.gdut.edu.cn/authserver/login?service=http://ehall.gdut.edu.cn/gsapp/sys/wdkbapp/*default/index.do#/xskcb";
     //研究生获取授权链接

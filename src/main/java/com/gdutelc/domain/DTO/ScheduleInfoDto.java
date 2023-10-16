@@ -1,11 +1,7 @@
 package com.gdutelc.domain.DTO;
-
 import com.alibaba.fastjson2.annotation.JSONField;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.io.Serializable;
 
@@ -19,6 +15,8 @@ import java.io.Serializable;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class ScheduleInfoDto implements Serializable {
 
     @ApiModelProperty("课程名称")
@@ -41,26 +39,13 @@ public class ScheduleInfoDto implements Serializable {
     @JSONField(name = "wd")
     private String courseDay;
 
+    @ApiModelProperty("节次")
+    @JSONField(name = "cs")
+    private String courseSection;
+
     @ApiModelProperty("课程描述")
     @JSONField(name = "cc")
     private String courseDescription;
 
-    @ApiModelProperty("前端显示的颜色，保证连续的两个颜色不一致即可，id号随便")
-    @JSONField(name = "id")
-    private String color;
 
-    @ApiModelProperty("结束周次情况")
-    @JSONField(name = "xs")
-    private String courseEndWeek;
-
-    public ScheduleInfoDto(String courseName, String coursePlace, String courseTeacher, String courseWeek, String courseDay, String courseDescription, String color, String courseEndWeek) {
-        this.courseName = courseName;
-        this.coursePlace = coursePlace;
-        this.courseTeacher = courseTeacher;
-        this.courseWeek = courseWeek;
-        this.courseDay = courseDay;
-        this.courseDescription = courseDescription;
-        this.color = color;
-        this.courseEndWeek = courseEndWeek;
-    }
 }

@@ -65,8 +65,9 @@ public class GdutDaysV3Controller {
     @ApiModelProperty(value = "获得课表信息")
     @GetMapping("/schedule")
     public AjaxResult schedule(@RequestParam(name = "cookies") String cookies,
-                               @RequestParam(name = "userType") Integer userType) {
-        return AjaxResult.success(gdutDayService.getScheduleInfo(cookies, userType));
+                               @RequestParam(name = "userType") Integer userType,
+                               @RequestParam(name = "termId") Integer termId) {
+        return AjaxResult.success(gdutDayService.getScheduleInfo(cookies, userType,termId));
     }
 
     @ApiModelProperty(value = "获得成绩")

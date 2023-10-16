@@ -4,6 +4,7 @@ import com.gdutelc.domain.DTO.*;
 import com.gdutelc.domain.VO.LibQrVO;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * @author Ymri
@@ -28,7 +29,7 @@ public interface GdutDayService {
      * @param cookies cookies
      * @return ArrayList<ScheduleInfoDto>
      */
-     ArrayList<ScheduleInfoDto> getScheduleInfo(String cookies,Integer userType);
+     Map<String,ArrayList<ScheduleInfoDto>> getScheduleInfo(String cookies, Integer userType, Integer termId);
 
 
     /**

@@ -8,6 +8,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +20,16 @@ import java.util.Map;
  * JsoupUtils 解析内容
  */
 public class JsoupUtils {
+
+    public static Document getUrlToDocument(String url,String jSessionId) throws IOException {
+        return Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36")
+                .header("Cookie",jSessionId)
+                .header("Connection","keep-alive")
+                .header("Referer","https://jxfw.gdut.edu.cn/login!welcome.action")
+                .timeout(30000)
+                .get();
+    }
 
 
     /**
@@ -81,7 +92,6 @@ public class JsoupUtils {
         for (String key : mapData.keySet()) {
             builder.add(key, mapData.get(key));
         }
-        builder.addEncoded("1","1");
         return builder.build();
     }
 }

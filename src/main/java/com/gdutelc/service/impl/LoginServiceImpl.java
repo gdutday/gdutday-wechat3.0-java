@@ -65,7 +65,7 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
 
     @Override
     public LoginDto graduateEhallLogin(GdutDayWechatUser gdutDayWechatUser, OkHttpClient myokHttpClient) throws IOException {
-        Response response = okHttpUtils.get(myokHttpClient, GRADUATE_LOGIN);
+        Response response = okHttpUtils.get(myokHttpClient, "http://ehall.gdut.edu.cn/login?service=http://ehall.gdut.edu.cn/new/index.html");
         //response.body().string();
         assert response.body() != null;
         String html = response.body().string();
@@ -75,21 +75,12 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
         response.close();
         RequestBody requestBody = JsoupUtils.getLoginForm(html, gdutDayWechatUser);
         // 发送登录请求, 待完善...
-        response = okHttpUtils.postByFormUrl(myokHttpClient, GRADUATE_LOGIN, requestBody);
+        response = okHttpUtils.postByFormUrl(myokHttpClient, "https://authserver.gdut.edu.cn/authserver/login?service=http%3A%2F%2Fehall.gdut.edu.cn%2Flogin%3Fservice%3Dhttp%3A%2F%2Fehall.gdut.edu.cn%2Fnew%2Findex.htm", requestBody);
         // 从cookieJar 里面拿到登录过的cookies，然后返回
         // 从cookieJar 里面拿到登录过的cookies，然后返回
         if(response.code()!=200){
             throw new ServiceException("账号或密码错误", response.code());
         }
-        //获取授权
-        Request request = new Request.Builder()
-                .url(JWT_URL)
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/114.0")
-                .post(requestBody)
-                .build();
-        //有bug，没有返回响应
-        myokHttpClient.newCall(request).execute();
         List<Cookie> cookies = myokHttpClient.cookieJar().loadForRequest(HttpUrl.parse(UNDER_GRADUATE_LOGIN));
         String cookieStr = "";
         for (Cookie cookie : cookies) {

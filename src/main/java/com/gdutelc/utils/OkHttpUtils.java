@@ -91,6 +91,28 @@ public class OkHttpUtils {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }/***
+     *
+     * @param myOkhttpClient once
+     * @param url url
+     * @param postData postData
+     * @return
+     */
+    public Response postByFormUrl(OkHttpClient myOkhttpClient,String url, RequestBody postData,String referer,String
+                                  cookie) {
+        Request request = new Request.Builder()
+                .url(url)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/114.0")
+                .header("Referer",referer)
+                .header("Cookie",cookie)
+                .post(postData)
+                .build();
+        try {
+            return myOkhttpClient.newCall(request).execute();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
