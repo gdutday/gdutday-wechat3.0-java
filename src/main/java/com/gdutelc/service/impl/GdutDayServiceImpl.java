@@ -3,23 +3,19 @@ package com.gdutelc.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.beust.ah.A;
 import com.gdutelc.common.constant.RoleConstant;
 import com.gdutelc.common.constant.UrlConstant;
 import com.gdutelc.domain.DTO.*;
 import com.gdutelc.domain.VO.LibQrVO;
-import com.gdutelc.framework.domain.R;
 import com.gdutelc.framework.exception.ServiceException;
 import com.gdutelc.service.GdutDayService;
 import com.gdutelc.utils.*;
 import jakarta.annotation.Resource;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import okhttp3.Response;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import springfox.documentation.spring.web.json.Json;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,6 +33,9 @@ public class GdutDayServiceImpl implements GdutDayService {
 
     @Resource
     private OkHttpUtils okHttpUtils;
+
+    private final Logger LOGGER = LoggerFactory.getLogger(GdutDayServiceImpl.class);
+
     /**
      * 获得用户信息
      *
@@ -44,7 +43,15 @@ public class GdutDayServiceImpl implements GdutDayService {
      * @return 用户dto
      */
     @Override
-    public UserInfoDto getUserInfo(String cookies,Integer userType) {
+    public UserInfoDto getUserInfo(String cookies, Integer userType) {
+        GdutDayCookieJar gdutDayCookieJar = new GdutDayCookieJar();
+        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient(gdutDayCookieJar);
+        String url = null;
+        if (userType == RoleConstant.GRADUATE) {
+            url = UrlConstant.GRADUATE_USER_INFO;
+        }
+        Response response = okHttpUtils.get(okHttpClient, url, cookies);
+
         return null;
     }
 
@@ -55,20 +62,20 @@ public class GdutDayServiceImpl implements GdutDayService {
      * @return 课表 Dto
      */
     @Override
-    public Map<String,ArrayList<ScheduleInfoDto>> getScheduleInfo(String cookies, Integer userType, Integer termId) {
+    public Map<String, ArrayList<ScheduleInfoDto>> getScheduleInfo(String cookies, Integer userType, Integer termId) {
         GdutDayCookieJar gdutDayCookieJar = new GdutDayCookieJar();
         OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient(gdutDayCookieJar);
-        if(userType.equals(RoleConstant.UNDER_GRADUATE)) {
+        if (userType.equals(RoleConstant.UNDER_GRADUATE)) {
             //本科生
 
             HashMap<String, String> paramMap = new HashMap<>(10);
-            paramMap.put("xnxqdm", termId+"");
+            paramMap.put("xnxqdm", termId + "");
             paramMap.put("zc", "");
             paramMap.put("page", "1");
             paramMap.put("rows", "300");
             paramMap.put("sort", "kxh");
             paramMap.put("order", "asc");
-            Response response = okHttpUtils.postByFormUrl(okHttpClient, UrlConstant.UNDER_CLAZZ, JsoupUtils.map2PostUrlCodeString(paramMap), "https://jxfw.gdut.edu.cn/",cookies);
+            Response response = okHttpUtils.postByFormUrl(okHttpClient, UrlConstant.UNDER_CLAZZ, JsoupUtils.map2PostUrlCodeString(paramMap), "https://jxfw.gdut.edu.cn/", cookies);
             String content = null;
             try {
                 content = response.body().string();
@@ -109,7 +116,7 @@ public class GdutDayServiceImpl implements GdutDayService {
             //                "ad": "教2-425",
             //                  课程名称
             //                "cn": "工程硕士英语",
-                                //课程老师
+            //课程老师
             //                "tn": "杨燕荣",
             //                  星期几
             //                "wd": 1,
@@ -137,20 +144,20 @@ public class GdutDayServiceImpl implements GdutDayService {
                 scheduleInfoDto.setCourseWeek(clazz.getString("zc"));
                 scheduleInfoDto.setCourseDescription(clazz.getString("sknrjj"));
                 String jcdm = clazz.getString("jcdm");
-                jcdm.replaceAll("0",",");
+                jcdm.replaceAll("0", ",");
                 String substring = jcdm.substring(0, jcdm.length() - 2);
                 scheduleInfoDto.setCourseSection(substring);
                 scheduleInfoDtos.add(scheduleInfoDto);
             }
             HashMap<String, ArrayList<ScheduleInfoDto>> ansMap = new HashMap<>();
-            for(int i = 1;i<22;i++){
-                ansMap.put(""+i,new ArrayList<ScheduleInfoDto>());
+            for (int i = 1; i < 22; i++) {
+                ansMap.put("" + i, new ArrayList<ScheduleInfoDto>());
             }
             for (ScheduleInfoDto scheduleInfoDto : scheduleInfoDtos) {
-                ansMap.get(scheduleInfoDto.getCourseWeek()+"").add(scheduleInfoDto);
+                ansMap.get(scheduleInfoDto.getCourseWeek() + "").add(scheduleInfoDto);
             }
             return ansMap;
-        }else if(userType.equals(RoleConstant.GRADUATE)){
+        } else if (userType.equals(RoleConstant.GRADUATE)) {
             Response response1 = okHttpUtils.get(okHttpClient, "http://ehall.gdut.edu.cn/appShow?appId=4979568947762216", cookies);
             try {
                 String string = response1.body().string();
@@ -240,7 +247,7 @@ public class GdutDayServiceImpl implements GdutDayService {
      * @param cookies cookies
      */
     @Override
-    public ArrayList<ExamScoreDto> getExamScore(String cookies,Integer userType) {
+    public ArrayList<ExamScoreDto> getExamScore(String cookies, Integer userType) {
         return null;
     }
 
@@ -252,7 +259,7 @@ public class GdutDayServiceImpl implements GdutDayService {
      */
     @Override
     public String getLibQr(LibQrVO libQrVO) {
-        return LiUtils.makeQRCode(libQrVO.getStuId(),libQrVO.getWidthStr(),libQrVO.getHeightStr());
+        return LiUtils.makeQRCode(libQrVO.getStuId(), libQrVO.getWidthStr(), libQrVO.getHeightStr());
     }
 
     /**
@@ -262,7 +269,7 @@ public class GdutDayServiceImpl implements GdutDayService {
      * @return ArrayList
      */
     @Override
-    public ArrayList<ExaminationDto> getExaminationInfo(String cookies,Integer userType) {
+    public ArrayList<ExaminationDto> getExaminationInfo(String cookies, Integer userType) {
         return null;
     }
 
@@ -271,25 +278,29 @@ public class GdutDayServiceImpl implements GdutDayService {
         GdutDayCookieJar gdutDayCookieJar = new GdutDayCookieJar();
         OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient(gdutDayCookieJar);
         Response response = null;
-        if(StringUtils.isEmpty(jSessionId)){
+        if (StringUtils.isEmpty(jSessionId)) {
             response = okHttpUtils.get(okHttpClient, "https://jxfw.gdut.edu.cn/yzm" + "?d=" + System.currentTimeMillis());
-        }else {
-            response = okHttpUtils.get(okHttpClient, "https://jxfw.gdut.edu.cn/yzm" + "?d=" + System.currentTimeMillis(),jSessionId);
+        } else {
+            response = okHttpUtils.get(okHttpClient, "https://jxfw.gdut.edu.cn/yzm" + "?d=" + System.currentTimeMillis(), jSessionId);
         }
-        if(response.code()!=200){
+        if (response.code() != 200) {
+            response.close();
             throw new ServiceException("获取验证码失败", response.code());
         }
         String header = response.header("Set-Cookie");
-        if(StringUtils.isEmpty(header)){
+        if (StringUtils.isEmpty(header)) {
             header = jSessionId;
         }
         String base64 = null;
         try {
             byte[] bytes = response.body().bytes();
+            response.close();
             base64 = LiUtils.makeBase64(bytes);
         } catch (IOException e) {
+            response.close();
             throw new RuntimeException(e);
         }
-        return new VerCodeDto(base64,header);
+        return new VerCodeDto(base64, header);
     }
+
 }

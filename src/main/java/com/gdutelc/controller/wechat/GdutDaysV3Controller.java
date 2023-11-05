@@ -1,6 +1,8 @@
 package com.gdutelc.controller.wechat;
 
+import com.gdutelc.domain.DTO.BaseRequestDto;
 import com.gdutelc.domain.DTO.LoginDto;
+import com.gdutelc.domain.DTO.VerCodeDto;
 import com.gdutelc.domain.VO.LibQrVO;
 import com.gdutelc.framework.domain.AjaxResult;
 import com.gdutelc.domain.GdutDayWechatUser;
@@ -48,9 +50,10 @@ public class GdutDaysV3Controller {
     @GetMapping("/sendVer")
     public AjaxResult sendVerification(HttpServletRequest request) {
         String jSessionId = request.getParameter("jSessionId");
-        gdutDayService.sendVerification(jSessionId);
-        return null;
+        VerCodeDto verCodeDto = gdutDayService.sendVerification(jSessionId);
+        return AjaxResult.success(verCodeDto);
     }
+
     @ApiModelProperty(value = "获得图书馆二维码")
     @GetMapping("/libQr")
     public AjaxResult libQr(@RequestParam(name = "stuId") String stuId,
@@ -67,21 +70,19 @@ public class GdutDaysV3Controller {
     public AjaxResult schedule(@RequestParam(name = "cookies") String cookies,
                                @RequestParam(name = "userType") Integer userType,
                                @RequestParam(name = "termId") Integer termId) {
-        return AjaxResult.success(gdutDayService.getScheduleInfo(cookies, userType,termId));
+        return AjaxResult.success(gdutDayService.getScheduleInfo(cookies, userType, termId));
     }
 
     @ApiModelProperty(value = "获得成绩")
     @GetMapping("/score")
-    public AjaxResult exam(@RequestParam(name = "cookies") String cookies,
-                           @RequestParam(name = "userType") Integer userType) {
-        return AjaxResult.success(gdutDayService.getExamScore(cookies, userType));
+    public AjaxResult exam(@RequestBody BaseRequestDto baseRequestDto) {
+        return AjaxResult.success(gdutDayService.getExamScore(baseRequestDto.getCookies(), baseRequestDto.getUserType()));
     }
 
     @ApiModelProperty(value = "获得用户信息")
-    @GetMapping("/userInfo")
-    public AjaxResult userInfo(@RequestParam(name = "cookies") String cookies,
-                               @RequestParam(name = "userType") Integer userType) {
-        return AjaxResult.success(gdutDayService.getUserInfo(cookies, userType));
+    @PostMapping("/userInfo")
+    public AjaxResult userInfo(@RequestBody BaseRequestDto baseRequestDto) {
+        return AjaxResult.success(gdutDayService.getUserInfo(baseRequestDto.getCookies(), baseRequestDto.getUserType()));
     }
 
     @ApiModelProperty(value = "获得考试安排")

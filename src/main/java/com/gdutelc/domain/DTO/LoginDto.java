@@ -38,4 +38,9 @@ public class LoginDto {
         this.weCookies = weCookies;
         this.userType = userType;
     }
+    public LoginDto(String weCookies, Integer userType) {
+        this.campus = "大学城校区";
+        this.weCookies = weCookies;
+        this.userType = userType;
+    }
 }

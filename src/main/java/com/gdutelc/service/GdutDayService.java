@@ -3,6 +3,7 @@ package com.gdutelc.service;
 import com.gdutelc.domain.DTO.*;
 import com.gdutelc.domain.VO.LibQrVO;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -58,8 +59,8 @@ public interface GdutDayService {
 
     /**
      * 获取登录验证码
-     * @param jSessionId
-     * @return
+     * @param jSessionId jSessionId
+     * @return base64编码的验证码
      */
     VerCodeDto sendVerification(String jSessionId);
 }
