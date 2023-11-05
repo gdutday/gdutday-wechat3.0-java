@@ -36,7 +36,7 @@ public class OkhttpConfiguration {
     private static final int readTimeout = 30;
     private static final int writeTimeout = 30;
 
-    private static final int MAXRENTRY = 3;
+    private static final int MAXRENTRY = 2; // 密码错误会多次重试
 
     /**
      * IDEA 由于版本问题可能会出现异常，忽视即可
@@ -48,9 +48,9 @@ public class OkhttpConfiguration {
         return new OkHttpClient.Builder()
                 .sslSocketFactory(sslSocketFactory(), x509TrustManager())
                 .retryOnConnectionFailure(false) //是否开启缓存
-                .connectionPool(pool())//连接池
-//                .followRedirects(false) // 禁止重定向，方便获取cookies
-                .addInterceptor(new OkhttpInterceptor(MAXRENTRY)) // 最大重试次数
+                .connectionPool(pool())
+//                .followRedirects(false) // 默认自动重定向； 禁止重定向，方便获取cookies
+                .addInterceptor(new OkhttpInterceptor(MAXRENTRY)) // 自动重试
                 .connectTimeout(10L, TimeUnit.SECONDS)
                 .readTimeout(readTimeout, TimeUnit.SECONDS)
                 .writeTimeout(writeTimeout, TimeUnit.SECONDS)

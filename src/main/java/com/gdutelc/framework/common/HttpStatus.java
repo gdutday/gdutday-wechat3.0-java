@@ -31,6 +31,7 @@ public class HttpStatus
      * 资源已被移除
      */
     public static final int MOVED_PERM = 301;
+    public static final int REDIRECT = 302;
 
     /**
      * 重定向
