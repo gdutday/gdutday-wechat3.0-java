@@ -89,6 +89,27 @@ public class OkHttpUtils {
             throw new RuntimeException(e);
         }
     }
+    /**
+     * 普通Get请求
+     *
+     * @param url
+     * @return
+     */
+    public Response getWithReferer(OkHttpClient myOkHttpClient, String url,String referer) {
+        Request request = new Request.Builder()
+                .url(url)
+                .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/114.0")
+                .header("Referer",referer)
+                .build();
+        try {
+            Response response = myOkHttpClient.newCall(request).execute();
+            //response.body().string();
+            assert response.body() != null;
+            return response;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * 请求带cookie
@@ -159,6 +180,27 @@ public class OkHttpUtils {
             throw new RuntimeException(e);
         }
     }
+    /***
+     *
+     * @param myOkhttpClient once
+     * @param url url
+     * @param postData postData
+     * @return
+     */
+    public Response postByFormUrlWithCookie(OkHttpClient myOkhttpClient, String url, RequestBody postData,String cookie) {
+        Request request = new Request.Builder()
+                .url(url)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/114.0")
+                .header("Cookie",cookie)
+                .post(postData)
+                .build();
+        try {
+            return myOkhttpClient.newCall(request).execute();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
     /***
@@ -176,6 +218,27 @@ public class OkHttpUtils {
                 .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/114.0")
                 .header("Referer", referer)
                 .header("Cookie", cookie)
+                .post(postData)
+                .build();
+        try {
+            return myOkhttpClient.newCall(request).execute();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    /***
+     *
+     * @param myOkhttpClient once
+     * @param url url
+     * @param postData postData
+     * @return
+     */
+    public Response postByFormUrl(OkHttpClient myOkhttpClient, String url, RequestBody postData, String referer) {
+        Request request = new Request.Builder()
+                .url(url)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/114.0")
+                .header("Referer", referer)
                 .post(postData)
                 .build();
         try {

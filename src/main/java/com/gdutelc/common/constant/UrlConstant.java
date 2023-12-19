@@ -27,6 +27,7 @@ public class UrlConstant {
     public static final String GRADUATE_EXAM = "https://ehall.gdut.edu.cn/gsapp/sys/wdcjapp/modules/wdcj/xscjcx.do";
 
     // 本科教务系统登录
+    public static final String JXFW_LOGIN = "https://jxfw.gdut.edu.cn/new/login";
     public static final String JWGL_LOGIN = "http://ehall.gdut.edu.cn/login?service=http://ehall.gdut.edu.cn/new/index.html";
 
     // 本科oss登录

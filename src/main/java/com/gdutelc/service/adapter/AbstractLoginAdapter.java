@@ -115,7 +115,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
                 throw new ServiceException("未知异常，请联系开发者", HttpStatus.FORBIDDEN);
             }
             if (userType == UNDER_GRADUATE) {
-                this.underGraduateEhallLogin(gdutDayWechatUser, myokHttpClient);
+                return this.underGraduateEhallLogin(gdutDayWechatUser, myokHttpClient);
             } else if (userType == GRADUATE) {
                 graduateEhallLogin(gdutDayWechatUser, myokHttpClient);
                 // 需要特殊处理cookie
