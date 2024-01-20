@@ -56,7 +56,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
         return null;
     }
 
-    public String loginDecrypt(@NotEmpty String loginInfo){
+    public String loginDecrypt(@NotEmpty String loginInfo) {
         String loginInfoStr;
         try {
             loginInfoStr = LiUtils.decrypt(loginInfo);
@@ -75,8 +75,9 @@ public abstract class AbstractLoginAdapter implements LoginService {
 
     /**
      * check block
+     *
      * @param gdutDayWechatUser gdutDayWechatUser
-     * @param myokHttpClient   myokHttpClient
+     * @param myokHttpClient    myokHttpClient
      */
     public void checkBlock(GdutDayWechatUser gdutDayWechatUser, OkHttpClient myokHttpClient) {
         HashMap<String, String> map = new HashMap<>(3);
@@ -84,20 +85,19 @@ public abstract class AbstractLoginAdapter implements LoginService {
         map.put("_", Long.toString(System.currentTimeMillis()));
         RequestBody requestBody1 = JsoupUtils.map2PostUrlCodeString(map);
         //检查是否需要滑块认证
-        Response response1 = okHttpUtils.postByFormUrl(myokHttpClient, CHECK_BLOCK_URL, requestBody1);
-        JSONObject object;
-        try {
+        try (Response response1 = okHttpUtils.postByFormUrl(myokHttpClient, CHECK_BLOCK_URL, requestBody1)) {
+            JSONObject object;
             if (response1.code() != 200 || response1.body() == null) {
                 log.error("统一认证滑块链接请求异常");
                 throw new ServiceException("服务器未知错误，请联系开发者");
             }
             object = JSONObject.parseObject(response1.body().string());
+            boolean isNeed = (boolean) object.get("isNeed");
+            if (isNeed) {
+                throw new ServiceException("请到统一认证网址进行滑块认证再登录！！", HttpStatus.FORBIDDEN);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-        boolean isNeed = (boolean) object.get("isNeed");
-        if (isNeed) {
-            throw new ServiceException("请到统一认证网址进行滑块认证再登录！！", HttpStatus.FORBIDDEN);
         }
     }
 
@@ -117,7 +117,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
         GdutDayCookieJar cookieJar = new GdutDayCookieJar();
         OkHttpClient myokHttpClient = okHttpUtils.makeOkhttpClient(cookieJar);
         this.checkBlock(gdutDayWechatUser, myokHttpClient);
-        String cookieStr =null;
+        String cookieStr = null;
         try {
             this.preLogin(gdutDayWechatUser, myokHttpClient);
             // 获得用户信息
@@ -128,15 +128,15 @@ public abstract class AbstractLoginAdapter implements LoginService {
             }
             if (userType == UNDER_GRADUATE) {
                 // 本科登录，传入本科教务系统地址
-                this.postLoginByUrl(UNDER_GRADUATE_LOGIN,myokHttpClient);
+                this.postLoginByUrl(UNDER_GRADUATE_LOGIN, myokHttpClient);
                 cookieStr = OkHttpUtils.getCookies(cookieJar.cookies);
             } else if (userType == GRADUATE) {
                 // 研究生登录，传入研究生登录地址
-                this.postLoginByUrl(UrlConstant.GRADUATE_EHALL_LOGIN,myokHttpClient);
+                this.postLoginByUrl(UrlConstant.GRADUATE_EHALL_LOGIN, myokHttpClient);
                 cookieStr = OkHttpUtils.getCookieRemoveShortWEU(cookieJar.cookies);
                 return new LoginDto(cookieStr, userType);
             } else if (userType == TEACHER) {
-                this.postLoginByUrl(UrlConstant.TEACHER__EHALL_LOGIN,myokHttpClient);
+                this.postLoginByUrl(UrlConstant.TEACHER__EHALL_LOGIN, myokHttpClient);
                 cookieStr = OkHttpUtils.getCookies(cookieJar.cookies);
             }
             return new LoginDto(cookieStr, userType);
@@ -148,6 +148,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
 
     /**
      * Pre login to ehall
+     *
      * @param gdutDayWechatUser userInfo
      */
     public abstract void preLogin(GdutDayWechatUser gdutDayWechatUser, OkHttpClient myokHttpClient);
@@ -156,19 +157,20 @@ public abstract class AbstractLoginAdapter implements LoginService {
     /**
      * 从ehhall的接口获得用户类型，兼容三端
      *
-     * @param myokHttpClient  okhtpClient
+     * @param myokHttpClient okhtpClient
      * @return 用户类型
-     *
      */
     public Integer getUserInfoFromEhall(OkHttpClient myokHttpClient) throws IOException {
-
+        String html;
+        String userNum;
         // 从接口获得用户类型
-        Response response = okHttpUtils.get(myokHttpClient, EHALL_USER_INFO);
-        assert response.body() != null;
-        String html = response.body().string();
-        response.body().close();
-        String userNum = OkHttpUtils.getUid(html);
-        if(userNum == null){
+        try (Response response = okHttpUtils.get(myokHttpClient, EHALL_USER_INFO)) {
+            assert response.body() != null;
+            html = response.body().string();
+            response.body().close();
+        }
+        userNum = OkHttpUtils.getUid(html);
+        if (userNum == null) {
             throw new ServiceException("登录失败，请检查账号密码是否正确", HttpStatus.FORBIDDEN);
         }
         // 获得用户第一位编号
@@ -188,13 +190,15 @@ public abstract class AbstractLoginAdapter implements LoginService {
             }
         }
         return -1;
+
     }
 
     /**
      * Login in to another system, just send a post request to OSS
-     * @param url url
+     *
+     * @param url          url
      * @param okHttpClient okHttpClient
      */
-    public abstract void postLoginByUrl(String url,OkHttpClient okHttpClient);
+    public abstract void postLoginByUrl(String url, OkHttpClient okHttpClient);
 
 }

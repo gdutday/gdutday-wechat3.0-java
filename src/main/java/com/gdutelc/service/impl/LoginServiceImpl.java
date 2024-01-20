@@ -56,9 +56,7 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
                 .post(requestBody)
                 .url(JXFW_LOGIN)
                 .build();
-        Response response;
-        try {
-            response = okHttpClient.newCall(request).execute();
+        try (Response response = okHttpClient.newCall(request).execute()) {
             assert response.body() != null;
             String bodyStr = response.body().string();
             JSONObject object = JSONObject.parseObject(bodyStr);
@@ -75,18 +73,17 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
 
     @Override
     public void preLogin(GdutDayWechatUser gdutDayWechatUser, OkHttpClient myokHttpClient) {
-        Response response = okHttpUtils.get(myokHttpClient, UrlConstant.EHALL_URL);
-        assert response.body() != null;
         String html;
-        try {
+        try (Response response = okHttpUtils.get(myokHttpClient, UrlConstant.EHALL_URL)) {
+            assert response.body() != null;
             html = response.body().string();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        response.close();
         if (!okHttpUtils.checkStatus(html)) {
-            throw new ServiceException("登录异常，请重新登录", response.code());
+            throw new ServiceException("登录异常，请重新登录", 400);
         }
+
         Document doc = Jsoup.parse(html);
         String pwdEncryptSalt = null;
         Map<String, String> tempMap = new HashMap<>(10);
@@ -117,21 +114,27 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
         tempMap.put("password", LiUtils.cbcEncrypt(gdutDayWechatUser.getPassword(), pwdEncryptSalt));
         RequestBody requestBody = JsoupUtils.map2PostUrlCodeString(tempMap);
         // 由于存在账号密码输入错误，所以只重试1次，不然错误密码次数过多很快就要滑块了
-        response = okHttpUtils.postByFormUrl(myokHttpClient, GRADUATE_EHALL_LOGIN, requestBody);
-        // 这里会自动多次重定向拿到ehall的cookie
-        if (response.code() != 200) {
-            throw new ServiceException("账号或密码错误", response.code());
+        try (Response responses = okHttpUtils.postByFormUrl(myokHttpClient, GRADUATE_EHALL_LOGIN, requestBody)) {
+            if (responses.code() != 200) {
+                throw new ServiceException("账号或密码错误", responses.code());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        response.close();
     }
 
     @Override
     public void postLoginByUrl(String url, OkHttpClient okHttpClient) {
         // 构造空的请求体
-        Response response = okHttpUtils.postByFormUrl(okHttpClient, url, RequestBody.create(new byte[0]));
-        if (response.code() != 200) {
-            throw new ServiceException("登录异常，请重新登录", response.code());
+        try (Response response = okHttpUtils.postByFormUrl(okHttpClient, url, RequestBody.create(new byte[0]))) {
+            if (response.code() != 200) {
+                throw new ServiceException("登录异常，请重新登录", response.code());
+            }
+        } catch (ServiceException e) {
+            throw new RuntimeException(e);
         }
+
+
     }
 
 
