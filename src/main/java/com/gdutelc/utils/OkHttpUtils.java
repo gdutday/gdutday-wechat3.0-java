@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Ymri
@@ -20,10 +22,12 @@ public class OkHttpUtils {
     @Resource
     private OkHttpClient okHttpClient;
 
+    // 正则匹配学号
+    private static final String pattern = "\"uid\":\\s*\"(\\d+)\"";
 
     /***
      * 复用全局的okhttpClient
-     * @return
+     * @return okhttpClient
      */
     public OkHttpClient makeOkhttpClient(CookieJar cookieJar) {
         return okHttpClient.newBuilder()
@@ -72,8 +76,8 @@ public class OkHttpUtils {
     /**
      * 普通Get请求
      *
-     * @param url
-     * @return
+     * @param url url
+     * @return Response
      */
     public Response get(OkHttpClient myOkHttpClient, String url) {
         Request request = new Request.Builder()
@@ -89,35 +93,14 @@ public class OkHttpUtils {
             throw new RuntimeException(e);
         }
     }
-    /**
-     * 普通Get请求
-     *
-     * @param url
-     * @return
-     */
-    public Response getWithReferer(OkHttpClient myOkHttpClient, String url,String referer) {
-        Request request = new Request.Builder()
-                .url(url)
-                .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/114.0")
-                .header("Referer",referer)
-                .build();
-        try {
-            Response response = myOkHttpClient.newCall(request).execute();
-            //response.body().string();
-            assert response.body() != null;
-            return response;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     /**
      * 请求带cookie
      *
-     * @param myOkHttpClient
-     * @param url
-     * @param cookies
-     * @return
+     * @param myOkHttpClient okHttpClient
+     * @param url          url
+     * @param cookies     cookies
+     * @return Response
      */
     public Response getAddCookie(OkHttpClient myOkHttpClient, String url, String cookies) {
         Request request = new Request.Builder()
@@ -137,10 +120,10 @@ public class OkHttpUtils {
     /**
      * 本科端使用
      *
-     * @param myOkHttpClient
-     * @param url
-     * @param jSessionId
-     * @return
+     * @param myOkHttpClient okHttpClient
+     * @param url           url
+     * @param jSessionId   jSessionId
+     * @return Response
      */
     public Response get(OkHttpClient myOkHttpClient, String url, String jSessionId) {
         Request request = new Request.Builder()
@@ -165,7 +148,7 @@ public class OkHttpUtils {
      * @param myOkhttpClient once
      * @param url url
      * @param postData postData
-     * @return
+     * @return Response
      */
     public Response postByFormUrl(OkHttpClient myOkhttpClient, String url, RequestBody postData) {
         Request request = new Request.Builder()
@@ -180,19 +163,20 @@ public class OkHttpUtils {
             throw new RuntimeException(e);
         }
     }
+
     /***
      *
      * @param myOkhttpClient once
      * @param url url
      * @param postData postData
-     * @return
+     * @return Respone
      */
-    public Response postByFormUrlWithCookie(OkHttpClient myOkhttpClient, String url, RequestBody postData,String cookie) {
+    public Response postByFormUrlWithCookie(OkHttpClient myOkhttpClient, String url, RequestBody postData, String cookie) {
         Request request = new Request.Builder()
                 .url(url)
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/114.0")
-                .header("Cookie",cookie)
+                .header("Cookie", cookie)
                 .post(postData)
                 .build();
         try {
@@ -208,7 +192,7 @@ public class OkHttpUtils {
      * @param myOkhttpClient once
      * @param url url
      * @param postData postData
-     * @return
+     * @return Response
      */
     public Response postByFormUrl(OkHttpClient myOkhttpClient, String url, RequestBody postData, String referer, String
             cookie) {
@@ -226,12 +210,13 @@ public class OkHttpUtils {
             throw new RuntimeException(e);
         }
     }
+
     /***
      *
      * @param myOkhttpClient once
      * @param url url
      * @param postData postData
-     * @return
+     * @return Response
      */
     public Response postByFormUrl(OkHttpClient myOkhttpClient, String url, RequestBody postData, String referer) {
         Request request = new Request.Builder()
@@ -255,21 +240,17 @@ public class OkHttpUtils {
      * @return ture-正常，false-出现风控
      */
     public Boolean checkStatus(String html) {
-        if (html.contains("Please enable JavaScript and refresh the page")) {
-            return false;
-        }
-        return true;
+        return !html.contains("Please enable JavaScript and refresh the page");
     }
 
     /***
-     * 从List里面获取cookie, 移除短的_WEU，短_WEU会导致403
-     * @param cookies
-     * @return
+     * 从List里面获取cookie, 移除短的_WEU，短_WEU会导致403，仅在研究生登录使用
+     * @param cookies cookie
+     * @return Processed cookies
      */
     public static String getCookieRemoveShortWEU(List<Cookie> cookies) {
-        String cookieStr = "";
+        StringBuilder cookieStr = new StringBuilder();
         Cookie tempWEU = null;
-
         for (Cookie cookie : cookies) {
             // 只保留cookie里面长的_WEU,
             if (cookie.name().equals("_WEU")) {
@@ -281,12 +262,42 @@ public class OkHttpUtils {
                     continue;
                 }
             }
-            cookieStr += cookie.name() + "=" + cookie.value() + ";";
+            cookieStr.append(cookie.name()).append("=").append(cookie.value()).append(";");
         }
         if (tempWEU != null) {
-            cookieStr += tempWEU.name() + "=" + tempWEU.value() + ";";
+            cookieStr.append(tempWEU.name()).append("=").append(tempWEU.value()).append(";");
         }
-        return cookieStr;
+        return cookieStr.toString();
+    }
+
+    /**
+     * cookieJar to cookie string
+     * @param cookies List<Cookie></>
+     * @return string cookie
+     */
+    public static String getCookies(List<Cookie> cookies) {
+        StringBuilder cookieStr = new StringBuilder();
+        for (Cookie cookie : cookies) {
+            cookieStr.append(cookie.name()).append("=").append(cookie.value()).append(";");
+        }
+        return cookieStr.toString();
+    }
+
+
+    /**
+     * Obtain uid from the response, which is the student ID
+     * @param html response.body().string()
+     * @return student ID
+     */
+    public static String getUid(String html) {
+        Pattern regex = Pattern.compile(pattern);
+        Matcher matcher = regex.matcher(html);
+        if (matcher.find()) {
+            return  matcher.group(1);
+        } else {
+            return null;
+        }
+
     }
 
 

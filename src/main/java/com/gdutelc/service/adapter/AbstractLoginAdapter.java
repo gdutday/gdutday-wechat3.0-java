@@ -1,6 +1,7 @@
 package com.gdutelc.service.adapter;
 
 import com.alibaba.fastjson.JSONObject;
+import com.gdutelc.common.constant.UrlConstant;
 import com.gdutelc.domain.DTO.LoginDto;
 import com.gdutelc.domain.GdutDayWechatUser;
 import com.gdutelc.framework.common.HttpStatus;
@@ -22,8 +23,7 @@ import java.util.HashMap;
 import static com.gdutelc.common.constant.LoginConstant.EHALL_LOGIN;
 import static com.gdutelc.common.constant.LoginConstant.JXFW_LOGIN;
 import static com.gdutelc.common.constant.RoleConstant.*;
-import static com.gdutelc.common.constant.UrlConstant.CHECK_BLOCK_URL;
-import static com.gdutelc.common.constant.UrlConstant.GRADUATE_USER_INFO;
+import static com.gdutelc.common.constant.UrlConstant.*;
 
 /**
  * @author Ymri
@@ -49,7 +49,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
                 return jxfwLogin(gdutDayWechatUser);
             }
             case EHALL_LOGIN -> {
-                return ehallLogin(gdutDayWechatUser);
+                return this.ehallLogin(gdutDayWechatUser);
             }
         }
         return null;
@@ -64,10 +64,9 @@ public abstract class AbstractLoginAdapter implements LoginService {
     public abstract LoginDto jxfwLogin(GdutDayWechatUser gdutDayWechatUser);
 
     /**
-     * 检查滑块
-     *
-     * @param gdutDayWechatUser
-     * @param myokHttpClient
+     * check block
+     * @param gdutDayWechatUser gdutDayWechatUser
+     * @param myokHttpClient   myokHttpClient
      */
     public void checkBlock(GdutDayWechatUser gdutDayWechatUser, OkHttpClient myokHttpClient) {
         HashMap<String, String> map = new HashMap<>(3);
@@ -108,71 +107,60 @@ public abstract class AbstractLoginAdapter implements LoginService {
         GdutDayCookieJar cookieJar = new GdutDayCookieJar();
         OkHttpClient myokHttpClient = okHttpUtils.makeOkhttpClient(cookieJar);
         this.checkBlock(gdutDayWechatUser, myokHttpClient);
+        String cookieStr =null;
         try {
+            this.preLogin(gdutDayWechatUser, myokHttpClient);
+            // 获得用户信息
             // 从登录的账号获得用户类型
-            int userType = getUserInfoFromEhall(gdutDayWechatUser);
+            int userType = getUserInfoFromEhall(myokHttpClient);
             if (userType < 0) {
                 throw new ServiceException("未知异常，请联系开发者", HttpStatus.FORBIDDEN);
             }
             if (userType == UNDER_GRADUATE) {
-                return this.underGraduateEhallLogin(gdutDayWechatUser, myokHttpClient);
+                // 本科登录，传入本科教务系统地址
+                this.postLoginByUrl(UNDER_GRADUATE_LOGIN,myokHttpClient);
+                cookieStr = OkHttpUtils.getCookies(cookieJar.cookies);
             } else if (userType == GRADUATE) {
-                graduateEhallLogin(gdutDayWechatUser, myokHttpClient);
-                // 需要特殊处理cookie
-                String cookieStr = OkHttpUtils.getCookieRemoveShortWEU(cookieJar.cookies);
-                /**
-                 *  留个demo给你，已经测试过其他接口，cookie可以正常使用
-                 *  this.test(cookieStr);
-                 */
+                // 研究生登录，传入研究生登录地址
+                this.postLoginByUrl(UrlConstant.GRADUATE_EHALL_LOGIN,myokHttpClient);
+                cookieStr = OkHttpUtils.getCookieRemoveShortWEU(cookieJar.cookies);
                 return new LoginDto(cookieStr, userType);
             } else if (userType == TEACHER) {
-                ;
+                this.postLoginByUrl(UrlConstant.TEACHER__EHALL_LOGIN,myokHttpClient);
+                cookieStr = OkHttpUtils.getCookies(cookieJar.cookies);
             }
-            return new LoginDto("null", userType);
+            return new LoginDto(cookieStr, userType);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+
     /**
-     * 研究生登录
-     *
-     * @param gdutDayWechatUser
-     * @param myokHttpClient
-     * @return
-     * @throws IOException
+     * Pre login to ehall
+     * @param gdutDayWechatUser userInfo
      */
-    public abstract void graduateEhallLogin(GdutDayWechatUser gdutDayWechatUser, OkHttpClient myokHttpClient) throws IOException;
-
-    /**
-     * 本科生登录
-     *
-     * @param gdutDayWechatUser
-     * @param myokHttpClient
-     * @return
-     * @throws IOException
-     */
-    public abstract LoginDto underGraduateEhallLogin(GdutDayWechatUser gdutDayWechatUser, OkHttpClient myokHttpClient) throws IOException;
-
-    /**
-     * 老师登录
-     *
-     * @param gdutDayWechatUser
-     * @param myokHttpClient
-     * @return
-     * @throws IOException
-     */
-    public abstract LoginDto teacherEhallLogin(GdutDayWechatUser gdutDayWechatUser, OkHttpClient myokHttpClient) throws IOException;
+    public abstract void preLogin(GdutDayWechatUser gdutDayWechatUser, OkHttpClient myokHttpClient);
 
 
     /**
-     * 从ehhall的接口获得用户信息，兼容三端
+     * 从ehhall的接口获得用户类型，兼容三端
      *
-     * @param gdutDayWechatUser 用户
+     * @param myokHttpClient  okhtpClient
      * @return 用户类型
+     *
      */
-    public Integer getUserInfoFromEhall(GdutDayWechatUser gdutDayWechatUser) {
-        String userNum = gdutDayWechatUser.getUser();
+    public Integer getUserInfoFromEhall(OkHttpClient myokHttpClient) throws IOException {
+
+        // 从接口获得用户类型
+        Response response = okHttpUtils.get(myokHttpClient, EHALL_USER_INFO);
+        assert response.body() != null;
+        String html = response.body().string();
+        response.body().close();
+        String userNum = OkHttpUtils.getUid(html);
+        if(userNum == null){
+            throw new ServiceException("登录失败，请检查账号密码是否正确", HttpStatus.FORBIDDEN);
+        }
         // 获得用户第一位编号
         int userType = Integer.parseInt(userNum.substring(0, 1));
         switch (userType) {
@@ -192,25 +180,11 @@ public abstract class AbstractLoginAdapter implements LoginService {
         return -1;
     }
 
-
     /**
-     * TODO 测试完请记得删除
-     *
-     * @param cookies
+     * Login in to another system, just send a post request to OSS
+     * @param url url
+     * @param okHttpClient okHttpClient
      */
-    public void test(String cookies) {
-        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient();
-        Response response = okHttpUtils.getAddCookie(okHttpClient, GRADUATE_USER_INFO, cookies);
-        try {
-
-            System.out.println("状态码：" + response.code());
-            // 正常返回 {"data":[{"YXDM_DISPLAY":"计算机学院","YXYWMC":"School of Computers Science","XH":"2112205176","YXDM":"05","XM":"易铭"}]}
-            System.out.println(response.body().string());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            response.close();
-        }
-    }
+    public abstract void postLoginByUrl(String url,OkHttpClient okHttpClient);
 
 }

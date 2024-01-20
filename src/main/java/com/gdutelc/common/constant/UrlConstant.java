@@ -28,12 +28,18 @@ public class UrlConstant {
 
     // 本科教务系统登录
     public static final String JXFW_LOGIN = "https://jxfw.gdut.edu.cn/new/login";
-    public static final String JWGL_LOGIN = "http://ehall.gdut.edu.cn/login?service=http://ehall.gdut.edu.cn/new/index.html";
-
-    // 本科oss登录
-    public static final String JWGL_OSS_LOGIN = "http://jxfw.gdut.edu.cn/new/ssoLogin";
 
     // 从ehall 获得用户个人信息，用来测试是否登录成功
     public static final String GRADUATE_USER_INFO = "http://ehall.gdut.edu.cn/gsapp/sys/wdkbapp/wdkcb/initXsxx.do?XH=";
+
+
+    // 登录ehall大厅 pre登录
+     public static final String EHALL_URL = "https://authserver.gdut.edu.cn/authserver/login?service=https%3A%2F%2Fehall.gdut.edu.cn%3A443%2Flogin%3Fservice%3Dhttps%3A%2F%2Fehall.gdut.edu.cn%2Fnew%2Findex.html";
+
+    // ehall的个人信息接口，用来获取正确的学号
+    public static final String EHALL_USER_INFO = "https://authserver.gdut.edu.cn/personalInfo/common/getUserConf";
+
+    // 后续补充这里即可
+    public static final String TEACHER__EHALL_LOGIN = "https://authserver.gdut.edu.cn/";
 
 }
