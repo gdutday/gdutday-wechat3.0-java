@@ -1,9 +1,9 @@
 #!/bin/sh
 # ./start.sh start 启动 stop 停止 restart 重启 status 状态
-AppName=gdutday-wechat3-java.jar
+AppName=gdutday-wechat3-java-0.0.1-SNAPSHOT.jar
 
-# JVM参数, 未检查调优，请自行斟酌
-JVM_OPTS="-Dname=$AppName  -Duser.timezone=Asia/Shanghai -Xms512m -Xmx1024m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintGCDateStamps  -XX:+PrintGCDetails -XX:NewRatio=1 -XX:SurvivorRatio=30 -XX:+UseParallelGC -XX:+UseParallelOldGC"
+# JVM参数, 使用zgc
+JVM_OPTS="-Dname=$AppName  -Duser.timezone=Asia/Shanghai -Xms512m -Xmx1024m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m  -XX:+UseZGC  -XX:ZCollectionInterval=120 -XX:ZAllocationSpikeTolerance=4 -XX:-ZProactive  -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=./errorDump.hprof"
 APP_HOME=`pwd`
 LOG_PATH=$APP_HOME/logs/$AppName.log
 

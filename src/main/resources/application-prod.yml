@@ -1,0 +1,58 @@
+# 项目相关配置
+gdutday:
+  # 名称
+  name: gdutDay
+  # 版本
+  version: 3.0.1
+  # 版权年份
+  copyrightYear: 2024
+
+# 开发环境配置
+server:
+  # 服务器的HTTP端口，默认为8080
+  port: 8080
+  servlet:
+    # 应用的访问路径
+    context-path: /
+  tomcat:
+    # tomcat的URI编码
+    uri-encoding: UTF-8
+    # 连接数满后的排队数，默认为100
+    accept-count: 10000
+    threads:
+      # tomcat最大线程数，默认为200，需要比okhttp那边大
+      max: 2048
+      # Tomcat启动初始化的线程数，默认值10
+      min-spare: 300
+
+# 日志配置
+logging:
+  level:
+    com.gdutelc: warn
+    org.springframework: warn
+
+# Spring配置
+spring:
+  # 资源信息
+  messages:
+    # 国际化资源文件路径
+    basename: i18n/messages
+
+
+management:
+  server:
+    port: 8092
+  endpoints:
+    web :
+      exposure:
+        include: "*"
+  endpoint:
+      prometheus:
+        enabled: true
+      health:
+        show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
