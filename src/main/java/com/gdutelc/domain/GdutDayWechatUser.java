@@ -1,6 +1,5 @@
 package com.gdutelc.domain;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -21,28 +20,28 @@ import java.io.Serializable;
 @ToString
 public class GdutDayWechatUser implements Serializable {
 
-    @ApiModelProperty(value = "用户名")
+    //(value = "用户名")
     @NotEmpty(message = "账号不能为空")
     private String user;
 
-    @ApiModelProperty(value = "密码")
+    //(value = "密码")
     @NotEmpty(message = "密码不能为空")
     private String password;
 
-    @ApiModelProperty(value = "验证码")
+    //(value = "验证码")
     private String code;
 
-    @ApiModelProperty(value = "用户身份类型，1-学生，2-研究生，3-老师")
+    //(value = "用户身份类型，1-学生，2-研究生，3-老师")
     @Max(value = 3, message = "登录类型错误")
     @Min(value = 1, message = "登录类型错误")
     private Integer userType;
 
-    @ApiModelProperty(value = "用户登录类型，1-jxfw登录(仅限制本科生)，2-hell登录")
+    //(value = "用户登录类型，1-jxfw登录(仅限制本科生)，2-hell登录")
     @Max(value = 2, message = "登录类型错误")
     @Min(value = 1, message = "登录类型错误")
     private Integer loginType;
 
-    @ApiModelProperty(value = "jSessionid, 兼容V2")
+    //(value = "jSessionid, 兼容V2")
     private String jSessionId;
 
 

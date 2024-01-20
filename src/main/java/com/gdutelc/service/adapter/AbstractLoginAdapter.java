@@ -9,6 +9,7 @@ import com.gdutelc.framework.exception.ServiceException;
 import com.gdutelc.service.LoginService;
 import com.gdutelc.utils.GdutDayCookieJar;
 import com.gdutelc.utils.JsoupUtils;
+import com.gdutelc.utils.LiUtils;
 import com.gdutelc.utils.OkHttpUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.HashMap;
@@ -39,7 +41,6 @@ public abstract class AbstractLoginAdapter implements LoginService {
 
     @Override
     public LoginDto gdutDayWechatUserLogin(@NotNull GdutDayWechatUser gdutDayWechatUser) {
-        //@TODO:密码解密
         switch (gdutDayWechatUser.getLoginType()) {
             case JXFW_LOGIN -> {
                 // 只有本科才能使用教务系统直接登录
@@ -55,6 +56,15 @@ public abstract class AbstractLoginAdapter implements LoginService {
         return null;
     }
 
+    public String loginDecrypt(@NotEmpty String loginInfo){
+        String loginInfoStr;
+        try {
+            loginInfoStr = LiUtils.decrypt(loginInfo);
+        } catch (Exception e) {
+            throw new ServiceException("Internal server error!", HttpStatus.ERROR);
+        }
+        return loginInfoStr;
+    }
 
     /**
      * 本科教务管理

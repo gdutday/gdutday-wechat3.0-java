@@ -1,6 +1,5 @@
 package com.gdutelc.domain.DTO;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,8 +15,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VerCodeDto {
-    @ApiModelProperty("验证码")
+   // "验证码")
     private String verCode;
-    @ApiModelProperty("cookie")
+    //"cookie")
     private String jSessionId;
 }

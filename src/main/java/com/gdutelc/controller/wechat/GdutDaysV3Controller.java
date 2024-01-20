@@ -3,13 +3,12 @@ package com.gdutelc.controller.wechat;
 import com.gdutelc.domain.DTO.BaseRequestDto;
 import com.gdutelc.domain.DTO.LoginDto;
 import com.gdutelc.domain.DTO.VerCodeDto;
+import com.gdutelc.domain.GdutDayWechatUser;
 import com.gdutelc.domain.VO.LibQrVO;
 import com.gdutelc.framework.domain.AjaxResult;
-import com.gdutelc.domain.GdutDayWechatUser;
 import com.gdutelc.service.GdutDayService;
 import com.gdutelc.service.impl.LoginServiceImpl;
 import com.gdutelc.service.impl.NotificationServiceImpl;
-import io.swagger.annotations.ApiModelProperty;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +32,6 @@ public class GdutDaysV3Controller {
     @Resource
     private GdutDayService gdutDayService;
 
-    @ApiModelProperty(value = "测试接口")
     @GetMapping("/test")
     public Object test() {
         return notificationService.getHiMessage();
@@ -41,12 +39,13 @@ public class GdutDaysV3Controller {
 
     @PostMapping("/login")
     public AjaxResult login(@RequestBody GdutDayWechatUser gdutDayWechatUser) {
-        // 如果是V2 走一遍VO转换
+        // V3解密
+        gdutDayWechatUser.setPassword(loginService.loginDecrypt(gdutDayWechatUser.getPassword()));
         LoginDto loginDto = loginService.gdutDayWechatUserLogin(gdutDayWechatUser);
         return AjaxResult.success(loginDto);
     }
 
-    @ApiModelProperty(value = "获取登录验证码")
+
     @GetMapping("/sendVer")
     public AjaxResult sendVerification(HttpServletRequest request) {
         String jSessionId = request.getParameter("jSessionId");
@@ -54,7 +53,6 @@ public class GdutDaysV3Controller {
         return AjaxResult.success(verCodeDto);
     }
 
-    @ApiModelProperty(value = "获得图书馆二维码")
     @GetMapping("/libQr")
     public AjaxResult libQr(@RequestParam(name = "stuId") String stuId,
                             @RequestParam(name = "width") Integer width,
@@ -65,7 +63,6 @@ public class GdutDaysV3Controller {
     }
 
 
-    @ApiModelProperty(value = "获得课表信息")
     @GetMapping("/schedule")
     public AjaxResult schedule(@RequestParam(name = "cookies") String cookies,
                                @RequestParam(name = "userType") Integer userType,
@@ -73,19 +70,16 @@ public class GdutDaysV3Controller {
         return AjaxResult.success(gdutDayService.getScheduleInfo(cookies, userType, termId));
     }
 
-    @ApiModelProperty(value = "获得成绩")
     @GetMapping("/score")
     public AjaxResult exam(@RequestBody BaseRequestDto baseRequestDto) {
         return AjaxResult.success(gdutDayService.getExamScore(baseRequestDto.getCookies(), baseRequestDto.getUserType()));
     }
 
-    @ApiModelProperty(value = "获得用户信息")
     @PostMapping("/userInfo")
     public AjaxResult userInfo(@RequestBody BaseRequestDto baseRequestDto) {
         return AjaxResult.success(gdutDayService.getUserInfo(baseRequestDto.getCookies(), baseRequestDto.getUserType()));
     }
 
-    @ApiModelProperty(value = "获得考试安排")
     @GetMapping("/examination")
     public AjaxResult examination(@RequestParam(name = "cookies") String cookies,
                                   @RequestParam(name = "userType") Integer userType) {

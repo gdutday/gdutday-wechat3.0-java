@@ -5,7 +5,7 @@ gdutday:
   # 版本
   version: 3.0.1
   # 版权年份
-  copyrightYear: 2023
+  copyrightYear: 2024
 
 # 开发环境配置
 server:
@@ -18,10 +18,10 @@ server:
     # tomcat的URI编码
     uri-encoding: UTF-8
     # 连接数满后的排队数，默认为100
-    accept-count: 2000
+    accept-count: 10000
     threads:
-      # tomcat最大线程数，默认为200
-      max: 1000
+      # tomcat最大线程数，默认为200，需要比okhttp那边大
+      max: 2048
       # Tomcat启动初始化的线程数，默认值10
       min-spare: 300
 
@@ -39,10 +39,20 @@ spring:
     basename: i18n/messages
 
 
-# Swagger配置
-swagger:
-  # 是否开启swagger
-  enabled: true
-  # 请求前缀
-  pathMapping: /dev-api
+management:
+  server:
+    port: 8092
+  endpoints:
+    web :
+      exposure:
+        include: "*"
+  endpoint:
+      prometheus:
+        enabled: true
+      health:
+        show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
