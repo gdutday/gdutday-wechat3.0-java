@@ -116,7 +116,8 @@ public abstract class AbstractLoginAdapter implements LoginService {
     public LoginDto ehallLogin(GdutDayWechatUser gdutDayWechatUser) {
         GdutDayCookieJar cookieJar = new GdutDayCookieJar();
         OkHttpClient myokHttpClient = okHttpUtils.makeOkhttpClient(cookieJar);
-        this.checkBlock(gdutDayWechatUser, myokHttpClient);
+        // 取消先验滑块，后续单独提供接口或者前端直接请求
+        // this.checkBlock(gdutDayWechatUser, myokHttpClient);
         String cookieStr = null;
         try {
             this.preLogin(gdutDayWechatUser, myokHttpClient);
