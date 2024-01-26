@@ -28,7 +28,7 @@ server:
 # 日志配置
 logging:
   level:
-    com.gdutelc: debug
+    com.gdutelc: warn
     org.springframework: warn
 
 # Spring配置
