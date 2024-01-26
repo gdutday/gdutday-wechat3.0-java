@@ -45,6 +45,16 @@ public class GdutDaysV3Controller {
         return AjaxResult.success(loginDto);
     }
 
+    /**
+     * 检查是否需要滑块
+     * @param user user
+     * @return bool
+     */
+    @GetMapping("/check/{user}")
+    public AjaxResult check(@PathVariable(value="user") String user){
+        return AjaxResult.success(loginService.checkBlock(user));
+    }
+
 
     @GetMapping("/sendVer")
     public AjaxResult sendVerification(HttpServletRequest request) {

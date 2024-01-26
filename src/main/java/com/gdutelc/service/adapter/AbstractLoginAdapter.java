@@ -7,10 +7,7 @@ import com.gdutelc.domain.GdutDayWechatUser;
 import com.gdutelc.framework.common.HttpStatus;
 import com.gdutelc.framework.exception.ServiceException;
 import com.gdutelc.service.LoginService;
-import com.gdutelc.utils.GdutDayCookieJar;
-import com.gdutelc.utils.JsoupUtils;
-import com.gdutelc.utils.LiUtils;
-import com.gdutelc.utils.OkHttpUtils;
+import com.gdutelc.utils.*;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
@@ -76,12 +73,15 @@ public abstract class AbstractLoginAdapter implements LoginService {
     /**
      * check block
      *
-     * @param gdutDayWechatUser gdutDayWechatUser
-     * @param myokHttpClient    myokHttpClient
+     * @param user user
      */
-    public void checkBlock(GdutDayWechatUser gdutDayWechatUser, OkHttpClient myokHttpClient) {
+    public boolean checkBlock(String user) {
+        if(StringUtils.isEmpty(user)){
+            throw new ServiceException("服务器未知错误，请联系开发者",HttpStatus.FORBIDDEN);
+        }
+        OkHttpClient myokHttpClient = okHttpUtils.makeOkhttpClient();
         HashMap<String, String> map = new HashMap<>(3);
-        map.put("username", gdutDayWechatUser.getUser());
+        map.put("username", user);
         map.put("_", Long.toString(System.currentTimeMillis()));
         RequestBody requestBody1 = JsoupUtils.map2PostUrlCodeString(map);
         //检查是否需要滑块认证
@@ -94,10 +94,13 @@ public abstract class AbstractLoginAdapter implements LoginService {
             object = JSONObject.parseObject(response1.body().string());
             boolean isNeed = (boolean) object.get("isNeed");
             if (isNeed) {
-                throw new ServiceException("请到统一认证网址进行滑块认证再登录！！", HttpStatus.FORBIDDEN);
+                // 需要手动过滑块
+                return true;
+            }else{
+                return false;
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ServiceException("服务器未知错误，请联系开发者");
         }
     }
 
