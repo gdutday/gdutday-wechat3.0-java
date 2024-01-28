@@ -10,6 +10,7 @@ import com.gdutelc.framework.domain.AjaxResult;
 import com.gdutelc.service.GdutDayService;
 import com.gdutelc.service.impl.LoginServiceImpl;
 import com.gdutelc.service.impl.NotificationServiceImpl;
+import com.gdutelc.service.impl.ScheduleInfoServiceImpl;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ public class GdutDaysV3Controller {
 
     @Resource
     private GdutDayService gdutDayService;
+
+    @Resource
+    private ScheduleInfoServiceImpl scheduleInfoService;
 
     @GetMapping("/test")
     public Object test() {
@@ -77,7 +81,7 @@ public class GdutDaysV3Controller {
 
     @PostMapping("/schedule")
     public AjaxResult schedule(@Validated @RequestBody ScheduleInfoQueryDto queryDto) {
-        return AjaxResult.success(gdutDayService.getScheduleInfo(queryDto));
+        return AjaxResult.success(scheduleInfoService.getScheduleInfo(queryDto));
     }
 
     @GetMapping("/score")

@@ -1,7 +1,5 @@
 package com.gdutelc.domain.query;
 
-import com.gdutelc.domain.query.BaseRequestDto;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,7 +17,7 @@ import lombok.ToString;
 @Getter
 public class ScheduleInfoQueryDto extends BaseRequestDto {
 
-    @NotNull(message = "学期信息不能为空")
+
     private Integer termId;
 
     public ScheduleInfoQueryDto(String cookies, Integer userType, Integer termId) {
