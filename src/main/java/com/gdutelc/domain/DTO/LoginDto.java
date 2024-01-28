@@ -3,9 +3,8 @@ package com.gdutelc.domain.DTO;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.validator.constraints.Range;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 
 /**
  * @author Ymri
@@ -24,8 +23,6 @@ public class LoginDto {
     private String weCookies;
 
 
-    @Max(value = 3, message = "登录类型错误")
-    @Min(value = 1, message = "登录类型错误")
     private Integer userType;
 
 
@@ -34,6 +31,7 @@ public class LoginDto {
         this.weCookies = weCookies;
         this.userType = userType;
     }
+
     public LoginDto(String weCookies, Integer userType) {
         this.campus = "大学城校区";
         this.weCookies = weCookies;

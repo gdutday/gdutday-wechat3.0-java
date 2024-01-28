@@ -9,13 +9,13 @@ import com.gdutelc.framework.exception.ServiceException;
 import com.gdutelc.service.LoginService;
 import com.gdutelc.utils.*;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -53,7 +53,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
         return null;
     }
 
-    public String loginDecrypt(@NotEmpty String loginInfo) {
+    public String loginDecrypt(@NotBlank String loginInfo) {
         String loginInfoStr;
         try {
             loginInfoStr = LiUtils.decrypt(loginInfo);

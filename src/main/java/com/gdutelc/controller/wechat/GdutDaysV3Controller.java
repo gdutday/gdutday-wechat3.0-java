@@ -1,7 +1,8 @@
 package com.gdutelc.controller.wechat;
 
-import com.gdutelc.domain.DTO.BaseRequestDto;
+import com.gdutelc.domain.query.BaseRequestDto;
 import com.gdutelc.domain.DTO.LoginDto;
+import com.gdutelc.domain.query.ScheduleInfoQueryDto;
 import com.gdutelc.domain.DTO.VerCodeDto;
 import com.gdutelc.domain.GdutDayWechatUser;
 import com.gdutelc.domain.VO.LibQrVO;
@@ -12,6 +13,7 @@ import com.gdutelc.service.impl.NotificationServiceImpl;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -73,11 +75,9 @@ public class GdutDaysV3Controller {
     }
 
 
-    @GetMapping("/schedule")
-    public AjaxResult schedule(@RequestParam(name = "cookies") String cookies,
-                               @RequestParam(name = "userType") Integer userType,
-                               @RequestParam(name = "termId") Integer termId) {
-        return AjaxResult.success(gdutDayService.getScheduleInfo(cookies, userType, termId));
+    @PostMapping("/schedule")
+    public AjaxResult schedule(@Validated @RequestBody ScheduleInfoQueryDto queryDto) {
+        return AjaxResult.success(gdutDayService.getScheduleInfo(queryDto));
     }
 
     @GetMapping("/score")

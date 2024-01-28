@@ -6,7 +6,6 @@ import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
 
 /**
  * @author Ymri
@@ -26,7 +25,7 @@ class OkhttpInterceptor implements Interceptor {
 
 
     @Override
-    public Response intercept(@NotNull Chain chain) {
+    public Response intercept(Chain chain) {
         /* 递归 4次下发请求，如果仍然失败 则返回 null ,但是 intercept must not return null.
          * 返回 null 会报 IllegalStateException 异常
          * */

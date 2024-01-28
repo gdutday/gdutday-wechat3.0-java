@@ -4,17 +4,16 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
-import com.beust.ah.A;
-import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.gdutelc.common.constant.RoleConstant;
 import com.gdutelc.common.constant.UrlConstant;
 import com.gdutelc.domain.DTO.*;
 import com.gdutelc.domain.VO.LibQrVO;
+import com.gdutelc.domain.query.ScheduleInfoQueryDto;
+import com.gdutelc.framework.common.HttpStatus;
 import com.gdutelc.framework.exception.ServiceException;
 import com.gdutelc.service.GdutDayService;
 import com.gdutelc.utils.*;
 import jakarta.annotation.Resource;
-import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import org.slf4j.Logger;
@@ -25,8 +24,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * @author Ymri
@@ -41,6 +40,38 @@ public class GdutDayServiceImpl implements GdutDayService {
     private OkHttpUtils okHttpUtils;
 
     private final Logger LOGGER = LoggerFactory.getLogger(GdutDayServiceImpl.class);
+
+    private static final HashMap<Integer, Integer> timeToCourseSection;
+
+    //
+    static {
+        timeToCourseSection = new HashMap<>();
+        timeToCourseSection.put(830, 1);
+        timeToCourseSection.put(915, 1);
+        timeToCourseSection.put(920, 2);
+        timeToCourseSection.put(1005, 2);
+        timeToCourseSection.put(1025, 3);
+        timeToCourseSection.put(1110, 3);
+        timeToCourseSection.put(1115, 4);
+        timeToCourseSection.put(1200, 4);
+        timeToCourseSection.put(1350, 5);
+        timeToCourseSection.put(1435, 5);
+        timeToCourseSection.put(1440, 6);
+        timeToCourseSection.put(1525, 6);
+        timeToCourseSection.put(1530, 7);
+        timeToCourseSection.put(1615, 7);
+        timeToCourseSection.put(1630, 8);
+        timeToCourseSection.put(1715, 8);
+        timeToCourseSection.put(1720, 9);
+        timeToCourseSection.put(1805, 9);
+        timeToCourseSection.put(1830, 10);
+        timeToCourseSection.put(1915, 10);
+        timeToCourseSection.put(1920, 11);
+        timeToCourseSection.put(2005, 11);
+        timeToCourseSection.put(2010, 12);
+        timeToCourseSection.put(2055, 12);
+
+    }
 
     /**
      * 获得用户信息
@@ -63,33 +94,45 @@ public class GdutDayServiceImpl implements GdutDayService {
 
     /**
      * 获得课表信息
+     * 默认使用研究生的学期信息
+     * 研究生的学期信息：20231、20232 分表表示两个学期
+     * 本科生：202301、202302
      *
-     * @param cookies cookies
+     * @param queryDto queryData
      * @return 课表 Dto
      */
     @Override
-    public Map<String, ArrayList<ScheduleInfoDto>> getScheduleInfo(String cookies, Integer userType, Integer termId) {
+    public Map<String, ArrayList<ScheduleInfoDto>> getScheduleInfo(ScheduleInfoQueryDto queryDto) {
         GdutDayCookieJar gdutDayCookieJar = new GdutDayCookieJar();
         OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient(gdutDayCookieJar);
-        if (userType.equals(RoleConstant.UNDER_GRADUATE)) {
-            return getUnderGraduateSchedule(okHttpClient,termId,cookies);
-        } else if (userType.equals(RoleConstant.GRADUATE)) {
-            return getGraduateSchedule(okHttpClient,termId,cookies);
+        if (queryDto.getUserType().equals(RoleConstant.UNDER_GRADUATE)) {
+            // 学期转换，见注释
+            Integer termId = (queryDto.getTermId()/10)*100+queryDto.getTermId()%10;
+            return getUnderGraduateSchedule(okHttpClient, termId, queryDto.getCookies());
+        } else if (queryDto.getUserType().equals(RoleConstant.GRADUATE)) {
+            return getGraduateSchedule(okHttpClient, queryDto.getTermId(), queryDto.getCookies());
         }
         return null;
     }
 
     /**
      * 获取研究生课表
+     *
      * @param okHttpClient
      * @param termId
      * @param cookies
      * @return
      */
     private Map<String, ArrayList<ScheduleInfoDto>> getGraduateSchedule(OkHttpClient okHttpClient, Integer termId, String cookies) {
-        String url = "http://ehall.gdut.edu.cn/gsapp/sys/wdkbapp/modules/xskcb/xspkjgcx.do?XNXQDM=20221&*order=<*order>";
+        String url = UrlConstant.GRADUATE_KB;
         url = url.replace("20221", termId.toString());
-        Response response = okHttpUtils.postByFormUrlWithCookie(okHttpClient,url,JsoupUtils.map2PostUrlCodeString(new HashMap<>()),cookies);
+        String content = null;
+        try (Response response = okHttpUtils.postByFormUrlWithCookie(okHttpClient, url, JsoupUtils.map2PostUrlCodeString(new HashMap<>()), cookies)) {
+            assert response.body() != null;
+            content = response.body().string();
+        } catch (IOException e) {
+            throw new ServiceException("课表获取失败，请重试！", 400);
+        }
         //课程返回的数据结构
         //{
         //    "datas": {
@@ -142,37 +185,23 @@ public class GdutDayServiceImpl implements GdutDayService {
         //                  }
         //          }
         //}
-        HashMap<String, ArrayList<ScheduleInfoDto>> map = new HashMap<>();
-        HashMap<Integer, Integer> timeToCourseSection = new HashMap<>();
-        timeToCourseSection.put(830,1);
-        timeToCourseSection.put(915,1);
-        timeToCourseSection.put(920,2);
-        timeToCourseSection.put(1005,2);
-        timeToCourseSection.put(1025,3);
-        timeToCourseSection.put(1110,3);
-        timeToCourseSection.put(1115,4);
-        timeToCourseSection.put(1200,4);
-        timeToCourseSection.put(1350,5);
-        timeToCourseSection.put(1435,5);
-        timeToCourseSection.put(1440,6);
-        timeToCourseSection.put(1525,6);
-        timeToCourseSection.put(1530,7);
-        timeToCourseSection.put(1615,7);
-        timeToCourseSection.put(1630,8);
-        timeToCourseSection.put(1715,8);
-        timeToCourseSection.put(1720,9);
-        timeToCourseSection.put(1805,9);
-        timeToCourseSection.put(1830,10);
-        timeToCourseSection.put(1915,10);
-        timeToCourseSection.put(1920,11);
-        timeToCourseSection.put(2005,11);
-        timeToCourseSection.put(2010,12);
-        timeToCourseSection.put(2055,12);
-        for(int i = 1;i<22;i++){
-            map.put(i+"",new ArrayList<>());
+
+        return getGraduateScheduleDataClear(content);
+    }
+
+    /**
+     * 研究生课表数据清洗
+     *
+     * @param content 请求返回的数据
+     * @return Map
+     */
+    public Map<String, ArrayList<ScheduleInfoDto>> getGraduateScheduleDataClear(String content) {
+        LinkedHashMap<String, ArrayList<ScheduleInfoDto>> map = new LinkedHashMap<>();
+        for (int i = 1; i < 22; i++) {
+            map.put(String.valueOf(i), new ArrayList<>());
         }
         try {
-            JSONObject object = JSONObject.parseObject(response.body().string());
+            JSONObject object = JSONObject.parseObject(content);
             JSONObject datas = object.getJSONObject("datas");
             JSONObject jsonObject = datas.getJSONObject("xspkjgcx");
             JSONArray rows = jsonObject.getJSONArray("rows");
@@ -182,53 +211,74 @@ public class GdutDayServiceImpl implements GdutDayService {
                 //课程名称
                 scheduleInfoDto.setCourseName(jsonObject1.getString("KCMC"));
                 //地点
-                scheduleInfoDto.setCoursePlace(jsonObject1.getString("JASMC"));
+                String classroom = jsonObject1.getString("JASMC").replace("(", "")
+                        .replace(")", "").replace("专用课室", "")
+                        .replace("（", "").replace("）", "").replace(" ", "");
+                scheduleInfoDto.setCoursePlace(classroom);
                 //老师
                 scheduleInfoDto.setCourseTeacher(jsonObject1.getString("JSXM"));
                 //星期
                 scheduleInfoDto.setCourseDay(jsonObject1.getString("XQ"));
+                // 课程描述
+                scheduleInfoDto.setCourseDescription(jsonObject1.getString("BJMC"));
                 //节次
                 Integer startTime = jsonObject1.getInteger("KSSJ");
                 Integer endTime = jsonObject1.getInteger("JSSJ");
-                Integer i1 = timeToCourseSection.get(startTime);
-                Integer i2 = timeToCourseSection.get(endTime);
-                if(i1==i2){
+                // 根据开始时间获得结束时间
+                Integer i1 = GdutDayServiceImpl.timeToCourseSection.get(startTime);
+                Integer i2 = GdutDayServiceImpl.timeToCourseSection.get(endTime);
+                if (i1.compareTo(i2) == 0) {
                     scheduleInfoDto.setCourseSection(i1.toString());
-                }else {
+                } else {
                     String cs = "";
-                    for(int j = i1;j<=i2;j++){
+                    for (int j = i1; j <= i2; j++) {
                         cs += j;
-                        if(j<i2){
-                            cs+=",";
+                        if (j < i2) {
+                            cs += ",";
                         }
                     }
                     scheduleInfoDto.setCourseSection(cs);
                 }
                 //周次
                 String zcmc = jsonObject1.getString("ZCMC");
+                zcmc = zcmc.replaceAll(" ", "");
                 String[] strings = zcmc.split(",");
-                for(String string:strings){
-                    string = string.replace("周","");
-                    String[] strings1 = string.split("-");
-                    int startCd = Integer.parseInt(strings1[0]);
-                    int endCd = Integer.parseInt(strings1[1]);
-                    for(int j = startCd;j<=endCd;j++){
-                        ArrayList<ScheduleInfoDto> scheduleInfoDtos = map.get(j + "");
+                for (String string : strings) {
+                    string = string.replace("周", "");
+                    if (string.contains("-")) {
+                        // 正常的 1-11周
+                        String[] strings1 = string.split("-");
+                        int startCd = Integer.parseInt(strings1[0]);
+                        int endCd = Integer.parseInt(strings1[1]);
+                        for (int j = startCd; j <= endCd; j++) {
+                            ArrayList<ScheduleInfoDto> scheduleInfoDtos = map.get(String.valueOf(j));
+                            ScheduleInfoDto scheduleInfoDto1 = new ScheduleInfoDto();
+                            // 使用浅拷贝，原来的引用不会被修改
+                            BeanUtils.copyProperties(scheduleInfoDto, scheduleInfoDto1);
+                            scheduleInfoDto1.setCourseWeek(String.valueOf(j));
+                            scheduleInfoDtos.add(scheduleInfoDto1);
+                        }
+                    } else {
+                        // 只有单周情况
+                        ArrayList<ScheduleInfoDto> scheduleInfoDtos = map.get(string);
                         ScheduleInfoDto scheduleInfoDto1 = new ScheduleInfoDto();
-                        BeanUtils.copyProperties(scheduleInfoDto,scheduleInfoDto1);
-                        scheduleInfoDto1.setCourseWeek(j+"");
+                        BeanUtils.copyProperties(scheduleInfoDto, scheduleInfoDto1);
+                        scheduleInfoDto1.setCourseWeek(string);
                         scheduleInfoDtos.add(scheduleInfoDto1);
                     }
                 }
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (NumberFormatException e) {
+            throw new ServiceException("数据处理异常，请联系开发者！", HttpStatus.BAD_REQUEST);
+        } catch (JSONException e) {
+            throw new ServiceException("请检查输入参数，请求异常！", HttpStatus.BAD_REQUEST);
         }
         return map;
     }
 
     /**
      * 本科生获取课表
+     *
      * @param okHttpClient
      * @param termId
      * @param cookies
@@ -243,18 +293,19 @@ public class GdutDayServiceImpl implements GdutDayService {
         paramMap.put("rows", "300");
         paramMap.put("sort", "kxh");
         paramMap.put("order", "asc");
-        Response response = okHttpUtils.postByFormUrl(okHttpClient, UrlConstant.UNDER_CLAZZ,
-                JsoupUtils.map2PostUrlCodeString(paramMap),
-                "https://jxfw.gdut.edu.cn/", cookies);
         String content = null;
-        try {
+        try (Response response = okHttpUtils.postByFormUrl(okHttpClient, UrlConstant.UNDER_CLAZZ,
+                JsoupUtils.map2PostUrlCodeString(paramMap),
+                "https://jxfw.gdut.edu.cn/", cookies)) {
+            assert response.body() != null;
             content = response.body().string();
+            if (response.code() != 200 || StringUtils.isEmpty(content)) {
+                throw new ServiceException("获取课表出现问题", response.code());
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        if (response.code() != 200 || StringUtils.isEmpty(content)) {
-            throw new ServiceException("获取课表出现问题", response.code());
-        }
+
         //返回数据结构（节选）
         //{
         //  "total": 175,
@@ -318,12 +369,12 @@ public class GdutDayServiceImpl implements GdutDayService {
                 String jcdm = clazz.getString("jcdm");
                 char[] charArray = jcdm.toCharArray();
                 String cs = "";
-                for(int j = 0;j<charArray.length;j+=2){
-                    String str = charArray[j]+"";
-                    str+=charArray[j+1];
-                    cs+=Integer.parseInt(str);
-                    if(j<charArray.length-2){
-                        cs+=",";
+                for (int j = 0; j < charArray.length; j += 2) {
+                    String str = charArray[j] + "";
+                    str += charArray[j + 1];
+                    cs += Integer.parseInt(str);
+                    if (j < charArray.length - 2) {
+                        cs += ",";
                     }
                 }
                 scheduleInfoDto.setCourseSection(cs);
@@ -332,14 +383,14 @@ public class GdutDayServiceImpl implements GdutDayService {
             HashMap<String, ArrayList<ScheduleInfoDto>> ansMap = new HashMap<>();
             //假定最多21周
             for (int i = 1; i < 22; i++) {
-                ansMap.put("" + i, new ArrayList<ScheduleInfoDto>());
+                ansMap.put(String.valueOf(i), new ArrayList<>());
             }
             for (ScheduleInfoDto scheduleInfoDto : scheduleInfoDtos) {
-                ansMap.get(scheduleInfoDto.getCourseWeek() + "").add(scheduleInfoDto);
+                ansMap.get(String.valueOf(scheduleInfoDto.getCourseWeek())).add(scheduleInfoDto);
             }
             return ansMap;
-        }catch (JSONException e){
-            throw new ServiceException("出现未知问题，请重新登录，若再出现，请联系开发人员",400);
+        } catch (JSONException e) {
+            throw new ServiceException("数据转换请求异常，多次出现该提示，请联系开发人员", 400);
         }
 
     }

@@ -2,8 +2,8 @@ package com.gdutelc.service;
 
 import com.gdutelc.domain.DTO.*;
 import com.gdutelc.domain.VO.LibQrVO;
+import com.gdutelc.domain.query.ScheduleInfoQueryDto;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -27,10 +27,10 @@ public interface GdutDayService {
     /**
      * 获得课程信息
      *
-     * @param cookies cookies
+     * @param queryDto QueryDaya
      * @return ArrayList<ScheduleInfoDto>
      */
-     Map<String,ArrayList<ScheduleInfoDto>> getScheduleInfo(String cookies, Integer userType, Integer termId);
+     Map<String,ArrayList<ScheduleInfoDto>> getScheduleInfo(ScheduleInfoQueryDto queryDto);
 
 
     /**
