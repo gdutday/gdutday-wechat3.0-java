@@ -39,7 +39,7 @@ public interface GdutDayService {
      * @param cookies cookies
      * @return ArrayList
      */
-     ArrayList<ExamScoreDto> getExamScore(String cookies,Integer userType);
+     Map<String,ArrayList<ExamScoreDto>> getExamScore(String cookies,Integer userType);
 
     /**
      * 获得图书馆二维码
@@ -53,9 +53,10 @@ public interface GdutDayService {
      * 获得学生考试安排，仅本科生使用,研究生课堂公布
      *
      * @param cookies cookies
+     * @param term
      * @return ArrayList
      */
-     ArrayList<ExaminationDto> getExaminationInfo(String cookies,Integer userType);
+     ArrayList<ExaminationDto> getExaminationInfo(String cookies, Integer userType, String term);
 
     /**
      * 获取登录验证码
@@ -63,4 +64,11 @@ public interface GdutDayService {
      * @return base64编码的验证码
      */
     VerCodeDto sendVerification(String jSessionId);
+
+    /**
+     * 获取学期
+     * @param cookies
+     * @return
+     */
+    String getTerm(String cookies);
 }

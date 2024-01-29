@@ -79,11 +79,21 @@ public class GdutDaysV3Controller {
     }
 
 
+    /**
+     * 获取课表
+     * @param queryDto
+     * @return
+     */
     @PostMapping("/schedule")
     public AjaxResult schedule(@Validated @RequestBody ScheduleInfoQueryDto queryDto) {
         return AjaxResult.success(scheduleInfoService.getScheduleInfo(queryDto));
     }
 
+    /**
+     * 获取成绩
+     * @param baseRequestDto
+     * @return
+     */
     @GetMapping("/score")
     public AjaxResult exam(@RequestBody BaseRequestDto baseRequestDto) {
         return AjaxResult.success(gdutDayService.getExamScore(baseRequestDto.getCookies(), baseRequestDto.getUserType()));
@@ -94,12 +104,28 @@ public class GdutDaysV3Controller {
         return AjaxResult.success(gdutDayService.getUserInfo(baseRequestDto.getCookies(), baseRequestDto.getUserType()));
     }
 
+    /**
+     * 获取考试安排
+     * @param cookies
+     * @param userType
+     * @return
+     */
     @GetMapping("/examination")
     public AjaxResult examination(@RequestParam(name = "cookies") String cookies,
-                                  @RequestParam(name = "userType") Integer userType) {
-        return AjaxResult.success(gdutDayService.getExaminationInfo(cookies, userType));
+                                  @RequestParam(name = "userType") Integer userType,
+                                  @RequestParam(name = "termId")String termId) {
+        return AjaxResult.success(gdutDayService.getExaminationInfo(cookies, userType,termId));
     }
 
+    /**
+     * 获取学期
+     * @param cookies
+     * @return
+     */
+    @GetMapping("/getTerm")
+    public AjaxResult getTerm(@RequestParam("cookies") String cookies){
+        return AjaxResult.success(gdutDayService.getTerm(cookies));
+    }
 
 }
 

@@ -16,6 +16,8 @@ import com.gdutelc.utils.*;
 import jakarta.annotation.Resource;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -26,6 +28,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static com.gdutelc.common.constant.RoleConstant.UNDER_GRADUATE;
 
 /**
  * @author Ymri
@@ -105,7 +109,7 @@ public class GdutDayServiceImpl implements GdutDayService {
     public Map<String, ArrayList<ScheduleInfoDto>> getScheduleInfo(ScheduleInfoQueryDto queryDto) {
         GdutDayCookieJar gdutDayCookieJar = new GdutDayCookieJar();
         OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient(gdutDayCookieJar);
-        if (queryDto.getUserType().equals(RoleConstant.UNDER_GRADUATE)) {
+        if (queryDto.getUserType().equals(UNDER_GRADUATE)) {
             // 学期转换，见注释
             Integer termId = (queryDto.getTermId()/10)*100+queryDto.getTermId()%10;
             return getUnderGraduateSchedule(okHttpClient, termId, queryDto.getCookies());
@@ -401,8 +405,62 @@ public class GdutDayServiceImpl implements GdutDayService {
      * @param cookies cookies
      */
     @Override
-    public ArrayList<ExamScoreDto> getExamScore(String cookies, Integer userType) {
+    public Map<String,ArrayList<ExamScoreDto>> getExamScore(String cookies, Integer userType) {
+        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient();
+        if(userType.equals(UNDER_GRADUATE)){
+            return getUnderGraduateScore(okHttpClient,cookies);
+        }
         return null;
+    }
+
+    /**
+     * 获取本科生考试成绩
+     *
+     * @param okHttpClient
+     * @param cookies
+     * @return
+     */
+    private Map<String, ArrayList<ExamScoreDto>> getUnderGraduateScore(OkHttpClient okHttpClient, String cookies) {
+        String url = "https://jxfw.gdut.edu.cn/xskccjxx!getDataList.action";
+        HashMap<String, String> paramMap = new HashMap<>();
+        paramMap.put("xnxqdm","");
+        paramMap.put("jhlxdm","");
+        paramMap.put("sort","xnxqdm");
+        paramMap.put("page","1");
+        paramMap.put("rows","200");
+        paramMap.put("order","asc");
+        Response response = okHttpUtils.postByFormUrl(okHttpClient, url, JsoupUtils.map2PostUrlCodeString(paramMap), "https://jxfw.gdut.edu.cn/", cookies);
+        assert response.body() != null;
+        String content = null;
+        try {
+            content = response.body().string();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        if (response.code() != 200 || StringUtils.isEmpty(content)) {
+            throw new ServiceException("获取课表出现问题", response.code());
+        }
+        JSONObject object = JSON.parseObject(content);
+        JSONArray rows = object.getJSONArray("rows");
+        HashMap<String, ArrayList<ExamScoreDto>> result = new HashMap<>();
+        for(int i = 0;i<rows.size();i++){
+            JSONObject jsonObject = rows.getJSONObject(i);
+            String term = jsonObject.getString("xnxqmc");
+            if(!result.containsKey(term)){
+                result.put(term,new ArrayList<>());
+            }
+            ExamScoreDto examScoreDto = new ExamScoreDto();
+            examScoreDto.setTerm(term);
+            examScoreDto.setGpa(jsonObject.getString("cjjd"));
+            examScoreDto.setResult(jsonObject.getString("zcj"));
+            examScoreDto.setCredit(jsonObject.getString("xf"));
+            examScoreDto.setType(jsonObject.getString("kcdlmc"));
+            examScoreDto.setCourseType(jsonObject.getString("kcflmc"));
+            examScoreDto.setOption(jsonObject.getString("xdfsmc"));
+            examScoreDto.setCourseName(jsonObject.getString("kcmc"));
+            result.get(term).add(examScoreDto);
+        }
+        return result;
     }
 
     /**
@@ -420,11 +478,44 @@ public class GdutDayServiceImpl implements GdutDayService {
      * 获得考试安排
      *
      * @param cookies cookies
+     * @param term
      * @return ArrayList
      */
     @Override
-    public ArrayList<ExaminationDto> getExaminationInfo(String cookies, Integer userType) {
-        return null;
+    public ArrayList<ExaminationDto> getExaminationInfo(String cookies, Integer userType, String term) {
+        HashMap<String,String> map = new HashMap<>();
+        map.put("xnxqdm",term);
+        map.put("page","1");
+        map.put("rows","200");
+        map.put("sort","zc,xq,jcdm2");
+        map.put("order","asc");
+        String url = "https://jxfw.gdut.edu.cn/xsksap!getDataList.action";
+        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient();
+        Response response = okHttpUtils.postByFormUrl(okHttpClient, url, JsoupUtils.map2PostUrlCodeString(map), "https://jxfw.gdut.edu.cn/", cookies);
+        assert response.body() != null;
+        String content = null;
+        try {
+            content = response.body().string();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        if (response.code() != 200 || StringUtils.isEmpty(content)) {
+            throw new ServiceException("获取课表出现问题", response.code());
+        }
+        JSONObject object = JSON.parseObject(content);
+        JSONArray rows = object.getJSONArray("rows");
+        HashMap<String,Integer> idMap = new HashMap<>();
+        ArrayList<ExaminationDto> arrayList = new ArrayList<>();
+        for(int i=0;i<rows.size();i++){
+            JSONObject jsonObject02 = rows.getJSONObject(i);
+
+            if(idMap.get(jsonObject02.getString("kcbh"))==null){
+                idMap.put(jsonObject02.getString("kcbh"),i);
+            }
+            ExaminationDto examination = new ExaminationDto(jsonObject02.getString("kscdmc"),jsonObject02.getString("kslbmc"),idMap.get(jsonObject02.getString("kcbh")),jsonObject02.getString("kssj"),jsonObject02.getString("ksaplxmc"),jsonObject02.getString("ksrq"),jsonObject02.getString("xqmc"),jsonObject02.getString("kcmc"));
+            arrayList.add(examination);
+        }
+        return arrayList;
     }
 
     @Override
@@ -455,6 +546,19 @@ public class GdutDayServiceImpl implements GdutDayService {
             throw new RuntimeException(e);
         }
         return new VerCodeDto(base64, header);
+    }
+
+    @Override
+    public String getTerm(String cookies) {
+        String examDateUrl = "https://jxfw.gdut.edu.cn/xsksap!ksapList.action";
+        Document document = null;
+        try {
+            document = JsoupUtils.getUrlToDocument(examDateUrl, cookies);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Elements elements = document.select("#xnxqdm option[selected]");
+        return elements.val();
     }
 
 }
