@@ -2,7 +2,9 @@ package com.gdutelc.service;
 
 import com.gdutelc.domain.DTO.*;
 import com.gdutelc.domain.VO.LibQrVO;
+import com.gdutelc.domain.query.BaseRequestDto;
 import com.gdutelc.domain.query.ScheduleInfoQueryDto;
+import okhttp3.OkHttpClient;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -34,14 +36,6 @@ public interface GdutDayService {
 
 
     /**
-     * 获得考试信息
-     *
-     * @param cookies cookies
-     * @return ArrayList
-     */
-     Map<String,ArrayList<ExamScoreDto>> getExamScore(String cookies,Integer userType);
-
-    /**
      * 获得图书馆二维码
      *
      * @param libQrVO 学号，宽度，高度
@@ -67,8 +61,8 @@ public interface GdutDayService {
 
     /**
      * 获取学期
-     * @param cookies
+     * @param baseRequestDto
      * @return
      */
-    String getTerm(String cookies);
+    String getTerm(BaseRequestDto baseRequestDto);
 }

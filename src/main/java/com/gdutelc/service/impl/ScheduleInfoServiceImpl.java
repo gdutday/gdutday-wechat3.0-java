@@ -83,6 +83,7 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
                 termId = (queryDto.getTermId() / 10) * 100 + queryDto.getTermId() % 10;
             } else {
                 ;
+                // 本科生补充学期请求
             }
             return getUnderGraduateSchedule(okHttpClient, termId, queryDto.getCookies());
         } else if (queryDto.getUserType().equals(RoleConstant.GRADUATE)) {

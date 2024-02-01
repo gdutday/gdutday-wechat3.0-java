@@ -31,13 +31,4 @@ public class JsoupUtils {
         return builder.build();
     }
 
-    public static Document getUrlToDocument(String url, String jSessionId) throws IOException {
-        return Jsoup.connect(url)
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36")
-                .header("Cookie",jSessionId)
-                .header("Connection","keep-alive")
-                .header("Referer","https://jxfw.gdut.edu.cn/login!welcome.action")
-                .timeout(30000)
-                .get();
-    }
 }

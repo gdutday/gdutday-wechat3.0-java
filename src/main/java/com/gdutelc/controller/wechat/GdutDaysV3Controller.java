@@ -7,6 +7,7 @@ import com.gdutelc.domain.DTO.VerCodeDto;
 import com.gdutelc.domain.GdutDayWechatUser;
 import com.gdutelc.domain.VO.LibQrVO;
 import com.gdutelc.framework.domain.AjaxResult;
+import com.gdutelc.service.ExamScoreService;
 import com.gdutelc.service.GdutDayService;
 import com.gdutelc.service.impl.LoginServiceImpl;
 import com.gdutelc.service.impl.NotificationServiceImpl;
@@ -37,6 +38,9 @@ public class GdutDaysV3Controller {
 
     @Resource
     private ScheduleInfoServiceImpl scheduleInfoService;
+
+    @Resource
+    private ExamScoreService examScoreService;
 
     @GetMapping("/test")
     public Object test() {
@@ -94,9 +98,9 @@ public class GdutDaysV3Controller {
      * @param baseRequestDto
      * @return
      */
-    @GetMapping("/score")
+    @PostMapping("/score")
     public AjaxResult exam(@RequestBody BaseRequestDto baseRequestDto) {
-        return AjaxResult.success(gdutDayService.getExamScore(baseRequestDto.getCookies(), baseRequestDto.getUserType()));
+        return AjaxResult.success(examScoreService.getExamScore(baseRequestDto));
     }
 
     @PostMapping("/userInfo")
@@ -119,12 +123,13 @@ public class GdutDaysV3Controller {
 
     /**
      * 获取学期
-     * @param cookies
+     * @param baseRequestDto
      * @return
      */
-    @GetMapping("/getTerm")
-    public AjaxResult getTerm(@RequestParam("cookies") String cookies){
-        return AjaxResult.success(gdutDayService.getTerm(cookies));
+
+    @PostMapping("/getTerm")
+    public AjaxResult getTerm(@RequestBody BaseRequestDto baseRequestDto){
+        return AjaxResult.success("获取最新学期成功！",gdutDayService.getTerm(baseRequestDto));
     }
 
 }

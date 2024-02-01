@@ -22,39 +22,39 @@ public class ExamScoreDto implements Serializable {
     /**
      * 课程名称
      */
-    @JSONField(name = "cn")
+    @JSONField(name = "KCMC")
     private String courseName;
 
     /**
      * 子课程类型，比如科学类还是其他
      */
-    @JSONField(name = "cType")
     private String courseType;
 
     /**
      * 学分
      */
-    @JSONField(name = "credit")
+    @JSONField(name = "XF")
     private String credit;
 
     /**
      * 绩点
      */
-    @JSONField(name = "gp")
     private String gpa;
 
     /**
      * 成绩
      */
-    @JSONField(name = "result")
+    @JSONField(name = "DYBFZCJ")
     private String result;
     /**
      * 学期
      */
+    @JSONField(name = "XNXQDM")
     private String term;
     /**
      * 课程类型
      */
+    @JSONField(name = "KCLBMC")
     private String type;
 
     /**

@@ -8,6 +8,7 @@ import com.gdutelc.common.constant.RoleConstant;
 import com.gdutelc.common.constant.UrlConstant;
 import com.gdutelc.domain.DTO.*;
 import com.gdutelc.domain.VO.LibQrVO;
+import com.gdutelc.domain.query.BaseRequestDto;
 import com.gdutelc.domain.query.ScheduleInfoQueryDto;
 import com.gdutelc.framework.common.HttpStatus;
 import com.gdutelc.framework.exception.ServiceException;
@@ -28,7 +29,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import static com.gdutelc.common.constant.RoleConstant.GRADUATE;
 import static com.gdutelc.common.constant.RoleConstant.UNDER_GRADUATE;
 
 /**
@@ -47,8 +51,14 @@ public class GdutDayServiceImpl implements GdutDayService {
 
     private static final HashMap<Integer, Integer> timeToCourseSection;
 
+    @Resource
+    private ScheduleInfoServiceImpl scheduleInfoService;
+    private static final Pattern regex;
+
     //
     static {
+        // 正则匹配学号
+        regex = Pattern.compile("<option value='(\\d+)' selected>");
         timeToCourseSection = new HashMap<>();
         timeToCourseSection.put(830, 1);
         timeToCourseSection.put(915, 1);
@@ -111,7 +121,7 @@ public class GdutDayServiceImpl implements GdutDayService {
         OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient(gdutDayCookieJar);
         if (queryDto.getUserType().equals(UNDER_GRADUATE)) {
             // 学期转换，见注释
-            Integer termId = (queryDto.getTermId()/10)*100+queryDto.getTermId()%10;
+            Integer termId = (queryDto.getTermId() / 10) * 100 + queryDto.getTermId() % 10;
             return getUnderGraduateSchedule(okHttpClient, termId, queryDto.getCookies());
         } else if (queryDto.getUserType().equals(RoleConstant.GRADUATE)) {
             return getGraduateSchedule(okHttpClient, queryDto.getTermId(), queryDto.getCookies());
@@ -137,58 +147,6 @@ public class GdutDayServiceImpl implements GdutDayService {
         } catch (IOException e) {
             throw new ServiceException("课表获取失败，请重试！", 400);
         }
-        //课程返回的数据结构
-        //{
-        //    "datas": {
-        //        "xspkjgcx": {
-        //            "totalSize": 19,
-        //            "pageSize": 999,
-        //            "rows": [
-        //                {
-        //                    "BY6": null,
-        //                    "BY5": null,
-        //                    "XS": 16,
-        //                    "BY4": null,
-        //                    "KSJCDM": 8,
-        //                    "JASMC": "教2-425（专用课室）",
-        //                    "BY3": null,
-        //                    "WID": "405b2052-fe29-4f20-a484-7c8aab4b16e1",
-        //                    "XQ": 2,
-        //                    "BY2": null,
-        //                    "BY1": null,
-        //                    "KSSJ": 1630,
-        //                    "SKFSDM_DISPLAY": "讲授",
-        //                    "XH": null,
-        //                    "ORDERFILTER": null,
-        //                    "CZR": "00006869",
-        //                    "BZ": null,
-        //                    "KCMC": "新时代中国特色社会主义理论与实践",
-        //                    "SKFSDM": "01",
-        //                    "XM": null,
-        //                    "ZCBH": "111111111111111100000000000000",
-        //                    "XNXQDM": "20222",
-        //                    "CZSJ": "2023-01-03 00:00:00",
-        //                    "JSXM": "冯英",
-        //                    "KBBZ": null,
-        //                    "RZLBDM": null,
-        //                    "BJDM": "43a7fed5095a45b389e578cffddf33f1",
-        //                    "SFQZAP": null,
-        //                    "BJMC": "新时代14",
-        //                    "JSJCDM": 8,
-        //                    "ZCMC": "1-16周",
-        //                    "JSSJ": 1715,
-        //                    "JCFADM": "01",
-        //                    "QZAPYY": null,
-        //                    "BY7": null,
-        //                    "BY8": null,
-        //                    "BY9": null,
-        //                    "JASDM": "11020425",
-        //                    "KCDM": "218029",
-        //                    "BY10": null
-        //                }]
-        //                  }
-        //          }
-        //}
 
         return getGraduateScheduleDataClear(content);
     }
@@ -309,53 +267,6 @@ public class GdutDayServiceImpl implements GdutDayService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        //返回数据结构（节选）
-        //{
-        //  "total": 175,
-        //       "rows": [
-        //        {
-        //            "dgksdm": "2740423",
-        //            "jxbmc": "电子信息类22(7),电子信息类22(8)",
-        //            "pkrs": "90",
-        //            "kcmc": "模拟电子技术",
-        //            "teaxms": "潘晴",
-        //            "xq": "3",
-        //            "jcdm": "0102",
-        //            "jxcdmc": "教3-307",
-        //            "zc": "1",
-        //            "kxh": "1",
-        //            "jxhjmc": "理论教学",
-        //            "flfzmc": "",
-        //            "sknrjj": "毕业要求与课程目标；第1章导言；3.1半导体基础知识；3.2.1半导体二极管的几种常见结构",
-        //            "pkrq": "2023-08-30",
-        //            "rownum_": "1"
-        //        }]
-        //}
-        //统一数据结构，转为与研究生相同的数据结构
-        //"code": 4000,
-        //    "data": {
-        //        "1": [
-        //            {
-        //                  课程地点
-        //                "ad": "教2-425",
-        //                  课程名称
-        //                "cn": "工程硕士英语",
-        //课程老师
-        //                "tn": "杨燕荣",
-        //                  星期几
-        //                "wd": 1,
-        //                  周次
-        //                "w": "1",
-        //                  课程描述
-        //                "cc": "工程硕士英语5",
-        //                  节次
-        //                "cs": "6,7",
-        //
-        //                "key": "工程硕士英语1-12周1",
-        //                "xs": 12,
-        //                "id": 2
-        //            },
         JSONObject jsonObject;
         try {
             jsonObject = JSON.parseObject(content);
@@ -400,70 +311,6 @@ public class GdutDayServiceImpl implements GdutDayService {
     }
 
     /**
-     * 获得考试信息
-     *
-     * @param cookies cookies
-     */
-    @Override
-    public Map<String,ArrayList<ExamScoreDto>> getExamScore(String cookies, Integer userType) {
-        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient();
-        if(userType.equals(UNDER_GRADUATE)){
-            return getUnderGraduateScore(okHttpClient,cookies);
-        }
-        return null;
-    }
-
-    /**
-     * 获取本科生考试成绩
-     *
-     * @param okHttpClient
-     * @param cookies
-     * @return
-     */
-    private Map<String, ArrayList<ExamScoreDto>> getUnderGraduateScore(OkHttpClient okHttpClient, String cookies) {
-        String url = "https://jxfw.gdut.edu.cn/xskccjxx!getDataList.action";
-        HashMap<String, String> paramMap = new HashMap<>();
-        paramMap.put("xnxqdm","");
-        paramMap.put("jhlxdm","");
-        paramMap.put("sort","xnxqdm");
-        paramMap.put("page","1");
-        paramMap.put("rows","200");
-        paramMap.put("order","asc");
-        Response response = okHttpUtils.postByFormUrl(okHttpClient, url, JsoupUtils.map2PostUrlCodeString(paramMap), "https://jxfw.gdut.edu.cn/", cookies);
-        assert response.body() != null;
-        String content = null;
-        try {
-            content = response.body().string();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        if (response.code() != 200 || StringUtils.isEmpty(content)) {
-            throw new ServiceException("获取课表出现问题", response.code());
-        }
-        JSONObject object = JSON.parseObject(content);
-        JSONArray rows = object.getJSONArray("rows");
-        HashMap<String, ArrayList<ExamScoreDto>> result = new HashMap<>();
-        for(int i = 0;i<rows.size();i++){
-            JSONObject jsonObject = rows.getJSONObject(i);
-            String term = jsonObject.getString("xnxqmc");
-            if(!result.containsKey(term)){
-                result.put(term,new ArrayList<>());
-            }
-            ExamScoreDto examScoreDto = new ExamScoreDto();
-            examScoreDto.setTerm(term);
-            examScoreDto.setGpa(jsonObject.getString("cjjd"));
-            examScoreDto.setResult(jsonObject.getString("zcj"));
-            examScoreDto.setCredit(jsonObject.getString("xf"));
-            examScoreDto.setType(jsonObject.getString("kcdlmc"));
-            examScoreDto.setCourseType(jsonObject.getString("kcflmc"));
-            examScoreDto.setOption(jsonObject.getString("xdfsmc"));
-            examScoreDto.setCourseName(jsonObject.getString("kcmc"));
-            result.get(term).add(examScoreDto);
-        }
-        return result;
-    }
-
-    /**
      * 获得图书馆二维码
      *
      * @param libQrVO 学号，宽度，高度
@@ -483,12 +330,12 @@ public class GdutDayServiceImpl implements GdutDayService {
      */
     @Override
     public ArrayList<ExaminationDto> getExaminationInfo(String cookies, Integer userType, String term) {
-        HashMap<String,String> map = new HashMap<>();
-        map.put("xnxqdm",term);
-        map.put("page","1");
-        map.put("rows","200");
-        map.put("sort","zc,xq,jcdm2");
-        map.put("order","asc");
+        HashMap<String, String> map = new HashMap<>();
+        map.put("xnxqdm", term);
+        map.put("page", "1");
+        map.put("rows", "200");
+        map.put("sort", "zc,xq,jcdm2");
+        map.put("order", "asc");
         String url = "https://jxfw.gdut.edu.cn/xsksap!getDataList.action";
         OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient();
         Response response = okHttpUtils.postByFormUrl(okHttpClient, url, JsoupUtils.map2PostUrlCodeString(map), "https://jxfw.gdut.edu.cn/", cookies);
@@ -504,15 +351,15 @@ public class GdutDayServiceImpl implements GdutDayService {
         }
         JSONObject object = JSON.parseObject(content);
         JSONArray rows = object.getJSONArray("rows");
-        HashMap<String,Integer> idMap = new HashMap<>();
+        HashMap<String, Integer> idMap = new HashMap<>();
         ArrayList<ExaminationDto> arrayList = new ArrayList<>();
-        for(int i=0;i<rows.size();i++){
+        for (int i = 0; i < rows.size(); i++) {
             JSONObject jsonObject02 = rows.getJSONObject(i);
 
-            if(idMap.get(jsonObject02.getString("kcbh"))==null){
-                idMap.put(jsonObject02.getString("kcbh"),i);
+            if (idMap.get(jsonObject02.getString("kcbh")) == null) {
+                idMap.put(jsonObject02.getString("kcbh"), i);
             }
-            ExaminationDto examination = new ExaminationDto(jsonObject02.getString("kscdmc"),jsonObject02.getString("kslbmc"),idMap.get(jsonObject02.getString("kcbh")),jsonObject02.getString("kssj"),jsonObject02.getString("ksaplxmc"),jsonObject02.getString("ksrq"),jsonObject02.getString("xqmc"),jsonObject02.getString("kcmc"));
+            ExaminationDto examination = new ExaminationDto(jsonObject02.getString("kscdmc"), jsonObject02.getString("kslbmc"), idMap.get(jsonObject02.getString("kcbh")), jsonObject02.getString("kssj"), jsonObject02.getString("ksaplxmc"), jsonObject02.getString("ksrq"), jsonObject02.getString("xqmc"), jsonObject02.getString("kcmc"));
             arrayList.add(examination);
         }
         return arrayList;
@@ -548,17 +395,25 @@ public class GdutDayServiceImpl implements GdutDayService {
         return new VerCodeDto(base64, header);
     }
 
+
     @Override
-    public String getTerm(String cookies) {
-        String examDateUrl = "https://jxfw.gdut.edu.cn/xsksap!ksapList.action";
-        Document document = null;
-        try {
-            document = JsoupUtils.getUrlToDocument(examDateUrl, cookies);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public String getTerm(BaseRequestDto baseRequestDto) {
+        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient();
+        if (baseRequestDto.getUserType() == GRADUATE) {
+            return "" + scheduleInfoService.getGraduateTermId(baseRequestDto.getCookies(), okHttpClient);
         }
-        Elements elements = document.select("#xnxqdm option[selected]");
-        return elements.val();
+        try (Response response = okHttpUtils.get(okHttpClient, UrlConstant.UNDER_CLAZZ_TERM, baseRequestDto.getCookies(), UrlConstant.UNDER_REFER)) {
+            String content = response.body().string();
+            Matcher matcher = regex.matcher(content);
+            if (!matcher.find()) {
+                throw new ServiceException("请重新登录！", HttpStatus.BAD_REQUEST);
+            }
+            String termId = matcher.group(0).replace("<option value='", "").replace("' selected>", "");
+            return termId.substring(0, termId.length() - 2) + termId.charAt(termId.length() - 1);
+        } catch (Exception e) {
+            throw new ServiceException("请重新登录！", HttpStatus.BAD_REQUEST);
+        }
+
     }
 
 }

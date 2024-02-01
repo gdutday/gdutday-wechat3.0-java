@@ -2,10 +2,12 @@ package com.gdutelc.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.gdutelc.common.constant.UrlConstant;
 import com.gdutelc.domain.DTO.ExamScoreDto;
 import com.gdutelc.domain.query.BaseRequestDto;
+import com.gdutelc.framework.common.HttpStatus;
 import com.gdutelc.framework.exception.ServiceException;
 import com.gdutelc.service.ExamScoreService;
 import com.gdutelc.utils.JsoupUtils;
@@ -14,10 +16,12 @@ import com.gdutelc.utils.StringUtils;
 import jakarta.annotation.Resource;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.gdutelc.common.constant.RoleConstant.GRADUATE;
@@ -29,6 +33,7 @@ import static com.gdutelc.common.constant.RoleConstant.UNDER_GRADUATE;
  * @since 2024/2/1 00:03
  * ExamScoreServiceImpl
  */
+@Service
 public class ExamScoreServiceImpl implements ExamScoreService {
 
     @Resource
@@ -57,7 +62,7 @@ public class ExamScoreServiceImpl implements ExamScoreService {
      *
      * @param okHttpClient okClient
      * @param cookies      cookie
-     * @return
+     * @return map
      */
     public Map<String, ArrayList<ExamScoreDto>> getUnderGraduateScore(OkHttpClient okHttpClient, String cookies) {
         String url = UrlConstant.UNDER_EXAME_SCORE;
@@ -80,7 +85,12 @@ public class ExamScoreServiceImpl implements ExamScoreService {
             throw new RuntimeException(e);
         }
 
-        JSONObject object = JSON.parseObject(content);
+        JSONObject object;
+        try {
+            object = JSON.parseObject(content);
+        } catch (JSONException e) {
+            throw new ServiceException("认证失败，请重新登录！", HttpStatus.BAD_REQUEST);
+        }
         JSONArray rows = object.getJSONArray("rows");
         HashMap<String, ArrayList<ExamScoreDto>> result = new HashMap<>();
         for (int i = 0; i < rows.size(); i++) {
@@ -109,11 +119,40 @@ public class ExamScoreServiceImpl implements ExamScoreService {
      *
      * @param okHttpClient okClient
      * @param cookies      cookie
-     * @return
+     * @return map
      */
 
     public Map<String, ArrayList<ExamScoreDto>> getGraduateScore(OkHttpClient okHttpClient, String cookies) {
-        return null;
+        String content = null;
+        JSONObject object = null;
+        try (Response response = okHttpUtils.getAddCookie(okHttpClient, UrlConstant.GRADUATE_EXAM, cookies)) {
+            assert response.body() != null;
+            content = response.body().string();
+        } catch (IOException e) {
+            throw new ServiceException("请求异常!", HttpStatus.BAD_REQUEST);
+        }
+        try {
+            object = JSONObject.parseObject(content);
+        } catch (Exception e) {
+            throw new ServiceException("登录过期，请重试...", HttpStatus.BAD_REQUEST);
+        }
+        JSONObject datas = object.getJSONObject("datas");
+        JSONObject jsonObject = datas.getJSONObject("xscjcx");
+        JSONArray rows = jsonObject.getJSONArray("rows");
+        List<ExamScoreDto> arrayList = JSONObject.parseArray(rows.toString(), ExamScoreDto.class);
+        // 筛选过滤 兼容本科生写法..
+        Map<String, ArrayList<ExamScoreDto>> retMap = new HashMap<>();
+        arrayList.forEach(e -> {
+            e.setGpa(String.valueOf((Double.parseDouble(e.getResult()) - 50.0) / 10));
+            if (retMap.containsKey(e.getTerm())) {
+                retMap.get(e.getTerm()).add(e);
+            } else {
+                ArrayList<ExamScoreDto> temp = new ArrayList<>();
+                temp.add(e);
+                retMap.put(e.getTerm(), temp);
+            }
+        });
+        return retMap;
     }
 
 
