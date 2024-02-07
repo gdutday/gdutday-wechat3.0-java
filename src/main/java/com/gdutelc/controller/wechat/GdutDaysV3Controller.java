@@ -2,6 +2,7 @@ package com.gdutelc.controller.wechat;
 
 import com.gdutelc.domain.query.BaseRequestDto;
 import com.gdutelc.domain.DTO.LoginDto;
+import com.gdutelc.domain.query.ExaminationReqDto;
 import com.gdutelc.domain.query.ScheduleInfoQueryDto;
 import com.gdutelc.domain.DTO.VerCodeDto;
 import com.gdutelc.domain.GdutDayWechatUser;
@@ -110,15 +111,12 @@ public class GdutDaysV3Controller {
 
     /**
      * 获取考试安排
-     * @param cookies
-     * @param userType
+     * @param reqDto
      * @return
      */
-    @GetMapping("/examination")
-    public AjaxResult examination(@RequestParam(name = "cookies") String cookies,
-                                  @RequestParam(name = "userType") Integer userType,
-                                  @RequestParam(name = "termId")String termId) {
-        return AjaxResult.success(gdutDayService.getExaminationInfo(cookies, userType,termId));
+    @PostMapping("/examination")
+    public AjaxResult examination(@RequestBody ExaminationReqDto reqDto) {
+        return AjaxResult.success(gdutDayService.getExaminationInfo(reqDto.getCookies(), reqDto.getUserType(), reqDto.getTermId()));
     }
 
     /**
