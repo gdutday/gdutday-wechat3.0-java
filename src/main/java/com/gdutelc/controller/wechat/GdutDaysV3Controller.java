@@ -50,8 +50,8 @@ public class GdutDaysV3Controller {
 
     @PostMapping("/login")
     public AjaxResult login(@RequestBody GdutDayWechatUser gdutDayWechatUser) {
-        // V3解密
-        gdutDayWechatUser.setPassword(loginService.loginDecrypt(gdutDayWechatUser.getPassword()));
+//        // V3解密
+//        gdutDayWechatUser.setPassword(loginService.loginDecrypt(gdutDayWechatUser.getPassword()));
         LoginDto loginDto = loginService.gdutDayWechatUserLogin(gdutDayWechatUser);
         return AjaxResult.success(loginDto);
     }
