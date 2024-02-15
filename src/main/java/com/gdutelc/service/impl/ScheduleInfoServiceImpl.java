@@ -24,10 +24,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 /**
  * @author Ymri
@@ -255,6 +254,45 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
             throw new ServiceException("数据处理异常，请检查身份是否过期！", HttpStatus.BAD_REQUEST);
         } catch (JSONException e) {
             throw new ServiceException("请检查输入参数或者身份是否过期！", HttpStatus.BAD_REQUEST);
+        }
+        //合并连续的课
+        for (int i = 1; i < 22; i++) {
+            ArrayList<ScheduleInfoDto> scheduleInfoDtos = map.get(i + "");
+            Map<String, List<ScheduleInfoDto>> collect = scheduleInfoDtos.stream().collect(Collectors.groupingBy(scheduleInfoDto -> scheduleInfoDto.getCourseName() + scheduleInfoDto.getCoursePlace() + scheduleInfoDto.getCourseDay()));
+            ArrayList<ScheduleInfoDto> scheduleInfoDtos1 = new ArrayList<>();
+            collect.forEach((s, scheduleInfoDtos2) -> {
+                scheduleInfoDtos2.sort(Comparator.comparingInt(a -> Integer.parseInt(a.getCourseSection())));
+                Integer min = Integer.parseInt(scheduleInfoDtos2.get(0).getCourseSection());
+                Integer max = Integer.parseInt(scheduleInfoDtos2.get(0).getCourseSection());
+                for (int j = 1; j < scheduleInfoDtos2.size(); j++) {
+                    Integer now = Integer.parseInt(scheduleInfoDtos2.get(j).getCourseSection());
+                    if (now - max == 1) {
+                        max = now;
+                    } else {
+                        ScheduleInfoDto scheduleInfoDto1 = new ScheduleInfoDto();
+                        BeanUtils.copyProperties(scheduleInfoDtos2.get(j), scheduleInfoDto1);
+                        String sc = min + "";
+                        for (int k = min + 1; k <= max; k++) {
+                            sc += ",";
+                            sc += k;
+                        }
+                        scheduleInfoDto1.setCourseSection(sc);
+                        scheduleInfoDtos1.add(scheduleInfoDto1);
+                        min = now;
+                        max = now;
+                    }
+                }
+                ScheduleInfoDto scheduleInfoDto1 = new ScheduleInfoDto();
+                BeanUtils.copyProperties(scheduleInfoDtos2.get(0), scheduleInfoDto1);
+                String sc = min + "";
+                for (int k = min + 1; k <= max; k++) {
+                    sc += ",";
+                    sc += k;
+                }
+                scheduleInfoDto1.setCourseSection(sc);
+                scheduleInfoDtos1.add(scheduleInfoDto1);
+            });
+            map.put(i+"",scheduleInfoDtos1);
         }
         return map;
     }
