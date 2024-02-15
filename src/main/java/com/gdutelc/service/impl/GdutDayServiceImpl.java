@@ -102,7 +102,6 @@ public class GdutDayServiceImpl implements GdutDayService {
             url = UrlConstant.GRADUATE_USER_INFO;
         }
         Response response = okHttpUtils.get(okHttpClient, url, cookies);
-
         return null;
     }
 
@@ -329,9 +328,10 @@ public class GdutDayServiceImpl implements GdutDayService {
      * @return ArrayList
      */
     @Override
-    public ArrayList<ExaminationDto> getExaminationInfo(String cookies, Integer userType, String term) {
+    public ArrayList<ExaminationDto> getExaminationInfo(String cookies, Integer userType, Integer term) {
+        term = (term / 10) * 100 + term % 10;
         HashMap<String, String> map = new HashMap<>();
-        map.put("xnxqdm", term);
+        map.put("xnxqdm", term+"");
         map.put("page", "1");
         map.put("rows", "200");
         map.put("sort", "zc,xq,jcdm2");

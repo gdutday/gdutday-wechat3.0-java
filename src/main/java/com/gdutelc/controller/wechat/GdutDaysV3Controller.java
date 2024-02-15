@@ -43,11 +43,20 @@ public class GdutDaysV3Controller {
     @Resource
     private ExamScoreService examScoreService;
 
+    /**
+     * 测试
+     * @return
+     */
     @GetMapping("/test")
     public Object test() {
         return notificationService.getHiMessage();
     }
 
+    /**
+     * 登录
+     * @param gdutDayWechatUser
+     * @return
+     */
     @PostMapping("/login")
     public AjaxResult login(@RequestBody GdutDayWechatUser gdutDayWechatUser) {
 //        // V3解密
@@ -67,6 +76,11 @@ public class GdutDaysV3Controller {
     }
 
 
+    /**
+     * 验证码
+     * @param request
+     * @return
+     */
     @GetMapping("/sendVer")
     public AjaxResult sendVerification(HttpServletRequest request) {
         String jSessionId = request.getParameter("jSessionId");
@@ -74,6 +88,13 @@ public class GdutDaysV3Controller {
         return AjaxResult.success(verCodeDto);
     }
 
+    /**
+     * 图书馆二维码
+     * @param stuId
+     * @param width
+     * @param height
+     * @return
+     */
     @GetMapping("/libQr")
     public AjaxResult libQr(@RequestParam(name = "stuId") String stuId,
                             @RequestParam(name = "width") Integer width,
@@ -104,6 +125,11 @@ public class GdutDaysV3Controller {
         return AjaxResult.success(examScoreService.getExamScore(baseRequestDto));
     }
 
+    /**
+     * 获得用户信息
+     * @param baseRequestDto
+     * @return
+     */
     @PostMapping("/userInfo")
     public AjaxResult userInfo(@RequestBody BaseRequestDto baseRequestDto) {
         return AjaxResult.success(gdutDayService.getUserInfo(baseRequestDto.getCookies(), baseRequestDto.getUserType()));

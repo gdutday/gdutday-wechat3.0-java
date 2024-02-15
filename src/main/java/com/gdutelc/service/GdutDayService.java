@@ -50,7 +50,7 @@ public interface GdutDayService {
      * @param term
      * @return ArrayList
      */
-     ArrayList<ExaminationDto> getExaminationInfo(String cookies, Integer userType, String term);
+     ArrayList<ExaminationDto> getExaminationInfo(String cookies, Integer userType, Integer term);
 
     /**
      * 获取登录验证码

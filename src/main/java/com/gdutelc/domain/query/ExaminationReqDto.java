@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class ExaminationReqDto {
-    private String termId;
+    private Integer termId;
     private String cookies;
     private Integer userType;
 }
