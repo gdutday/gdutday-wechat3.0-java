@@ -65,4 +65,8 @@ public interface GdutDayService {
      * @return
      */
     String getTerm(BaseRequestDto baseRequestDto);
+
+    String getAdmissionDate();
+
+    boolean changeAdmissionDate(String date);
 }

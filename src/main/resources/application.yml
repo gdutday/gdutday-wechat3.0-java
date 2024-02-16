@@ -6,7 +6,7 @@ gdutday:
   version: 3.0.1
   # 版权年份
   copyrightYear: 2024
-
+  admissionDate: "2024-02-16"
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
@@ -28,7 +28,7 @@ server:
 # 日志配置
 logging:
   level:
-    com.gdutelc: warn
+    com.gdutelc: debug
     org.springframework: warn
 
 # Spring配置

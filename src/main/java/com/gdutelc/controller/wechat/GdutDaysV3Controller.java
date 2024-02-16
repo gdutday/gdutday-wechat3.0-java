@@ -1,5 +1,6 @@
 package com.gdutelc.controller.wechat;
 
+import com.gdutelc.domain.query.AdmissionDateDto;
 import com.gdutelc.domain.query.BaseRequestDto;
 import com.gdutelc.domain.DTO.LoginDto;
 import com.gdutelc.domain.query.ExaminationReqDto;
@@ -67,11 +68,12 @@ public class GdutDaysV3Controller {
 
     /**
      * 检查是否需要滑块
+     *
      * @param user user
      * @return bool
      */
     @GetMapping("/check/{user}")
-    public AjaxResult check(@PathVariable(value="user") String user){
+    public AjaxResult check(@PathVariable(value = "user") String user) {
         return AjaxResult.success(loginService.checkBlock(user));
     }
 
@@ -107,6 +109,7 @@ public class GdutDaysV3Controller {
 
     /**
      * 获取课表
+     *
      * @param queryDto
      * @return
      */
@@ -117,6 +120,7 @@ public class GdutDaysV3Controller {
 
     /**
      * 获取成绩
+     *
      * @param baseRequestDto
      * @return
      */
@@ -137,6 +141,7 @@ public class GdutDaysV3Controller {
 
     /**
      * 获取考试安排
+     *
      * @param reqDto
      * @return
      */
@@ -147,14 +152,31 @@ public class GdutDaysV3Controller {
 
     /**
      * 获取学期
+     *
      * @param baseRequestDto
      * @return
      */
 
     @PostMapping("/getTerm")
-    public AjaxResult getTerm(@RequestBody BaseRequestDto baseRequestDto){
-        return AjaxResult.success("获取最新学期成功！",gdutDayService.getTerm(baseRequestDto));
+    public AjaxResult getTerm(@RequestBody BaseRequestDto baseRequestDto) {
+        return AjaxResult.success("获取最新学期成功！", gdutDayService.getTerm(baseRequestDto));
     }
 
+    @GetMapping("/admissionDate")
+    public AjaxResult getTerm() {
+        return AjaxResult.success("获取开学时间成功！", gdutDayService.getAdmissionDate());
+    }
+
+    /**
+     * 修改开学时间，记得先解密
+     *
+     * @param admissionDateDto
+     * @return
+     */
+    @PostMapping("/admissionDate")
+    private AjaxResult changeTerm(@RequestBody AdmissionDateDto admissionDateDto) {
+        String date = loginService.loginDecrypt(admissionDateDto.getAdmissionDate());
+        return AjaxResult.success("修改开学时间为：" + date, gdutDayService.changeAdmissionDate(date));
+    }
 }
 

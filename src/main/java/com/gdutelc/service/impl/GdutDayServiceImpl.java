@@ -11,6 +11,7 @@ import com.gdutelc.domain.VO.LibQrVO;
 import com.gdutelc.domain.query.BaseRequestDto;
 import com.gdutelc.domain.query.ScheduleInfoQueryDto;
 import com.gdutelc.framework.common.HttpStatus;
+import com.gdutelc.framework.config.GdutConfig;
 import com.gdutelc.framework.exception.ServiceException;
 import com.gdutelc.service.GdutDayService;
 import com.gdutelc.utils.*;
@@ -25,6 +26,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -54,6 +57,9 @@ public class GdutDayServiceImpl implements GdutDayService {
     @Resource
     private ScheduleInfoServiceImpl scheduleInfoService;
     private static final Pattern regex;
+
+    @Resource
+    private GdutConfig gdutConfig;
 
     //
     static {
@@ -415,5 +421,37 @@ public class GdutDayServiceImpl implements GdutDayService {
         }
 
     }
+
+    /**
+     * 开学时间
+     *
+     * @return
+     */
+    @Override
+    public String getAdmissionDate() {
+        return gdutConfig.getAdmissionDate().toString();
+    }
+
+    /**
+     * 修改开学时间，加密后
+     *
+     * @param date date
+     */
+    @Override
+    public boolean changeAdmissionDate(String date) {
+        //
+        DateTimeFormatter ft = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        try {
+            LocalDate.parse(date, ft);
+        } catch (Exception e) {
+            throw new ServiceException("Please enter the correct date！");
+        }
+        // 内部使用 懒得加锁
+        gdutConfig.setAdmissionDate(date);
+        LOGGER.info("更新开学时间：" + date);
+        return true;
+    }
+
 
 }
