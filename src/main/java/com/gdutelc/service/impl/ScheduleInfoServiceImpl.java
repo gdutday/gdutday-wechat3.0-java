@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 public class ScheduleInfoServiceImpl implements ScheduleInfoService {
     @Resource
     private OkHttpUtils okHttpUtils;
-    private static final Logger  LOG = LoggerFactory.getLogger("ScheduleInfoServiceImpl");
+    private static final Logger LOG = LoggerFactory.getLogger("ScheduleInfoServiceImpl");
     private static final HashMap<Integer, Integer> timeToCourseSection;
 
     //
@@ -101,8 +101,8 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
      * 获取研究生课表
      *
      * @param okHttpClient 请求
-     * @param termId 学期信息
-     * @param cookies cookie
+     * @param termId       学期信息
+     * @param cookies      cookie
      * @return Map
      */
     private Map<String, ArrayList<ScheduleInfoDto>> getGraduateSchedule(OkHttpClient okHttpClient, Integer termId, String cookies) {
@@ -292,7 +292,7 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
                 scheduleInfoDto1.setCourseSection(sc);
                 scheduleInfoDtos1.add(scheduleInfoDto1);
             });
-            map.put(i+"",scheduleInfoDtos1);
+            map.put(i + "", scheduleInfoDtos1);
         }
         return map;
     }
@@ -301,8 +301,8 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
      * 本科生获取课表
      *
      * @param okHttpClient client
-     * @param termId 学期信息
-     * @param cookies cookie
+     * @param termId       学期信息
+     * @param cookies      cookie
      * @return Map
      */
     private Map<String, ArrayList<ScheduleInfoDto>> getUnderGraduateSchedule(OkHttpClient okHttpClient, Integer termId, String cookies) {
@@ -314,7 +314,7 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
         paramMap.put("rows", "300");
         paramMap.put("sort", "kxh");
         paramMap.put("order", "asc");
-        String content ;
+        String content;
         try (Response response = okHttpUtils.postByFormUrl(okHttpClient, UrlConstant.UNDER_CLAZZ,
                 JsoupUtils.map2PostUrlCodeString(paramMap),
                 "https://jxfw.gdut.edu.cn/", cookies)) {
@@ -436,7 +436,8 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
             JSONObject data = rows.getJSONObject(0);
             return Integer.parseInt(data.getString("WID"));
         } catch (IOException e) {
-            throw new ServiceException("数据处理异常，多次出现该异常，请联系开发者！", HttpStatus.BAD_REQUEST);
+            LOG.warn(e.getMessage());
+            throw new ServiceException("网络请求异常，请重试！", HttpStatus.ERROR);
         }
     }
 

@@ -79,7 +79,7 @@ public class ExamScoreServiceImpl implements ExamScoreService {
             assert response.body() != null;
             content = response.body().string();
             if (response.code() != 200 || StringUtils.isEmpty(content)) {
-                throw new ServiceException("获取课表出现问题", response.code());
+                throw new ServiceException("获取课表出现问题", HttpStatus.BAD_REQUEST);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -89,7 +89,7 @@ public class ExamScoreServiceImpl implements ExamScoreService {
         try {
             object = JSON.parseObject(content);
         } catch (JSONException e) {
-            throw new ServiceException("认证失败，请重新登录！", HttpStatus.BAD_REQUEST);
+            throw new ServiceException("身份信息过期，请重新登录！", HttpStatus.BAD_REQUEST);
         }
         JSONArray rows = object.getJSONArray("rows");
         HashMap<String, ArrayList<ExamScoreDto>> result = new HashMap<>();
@@ -129,12 +129,12 @@ public class ExamScoreServiceImpl implements ExamScoreService {
             assert response.body() != null;
             content = response.body().string();
         } catch (IOException e) {
-            throw new ServiceException("请求异常!", HttpStatus.BAD_REQUEST);
+            throw new ServiceException("网络请求异常，请重试！", HttpStatus.ERROR);
         }
         try {
             object = JSONObject.parseObject(content);
         } catch (Exception e) {
-            throw new ServiceException("登录过期，请重试...", HttpStatus.BAD_REQUEST);
+            throw new ServiceException("身份信息过期，请重新登录！", HttpStatus.BAD_REQUEST);
         }
         JSONObject datas = object.getJSONObject("datas");
         JSONObject jsonObject = datas.getJSONObject("xscjcx");

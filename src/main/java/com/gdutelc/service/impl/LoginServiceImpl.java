@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.gdutelc.common.constant.UrlConstant;
 import com.gdutelc.domain.DTO.LoginDto;
 import com.gdutelc.domain.GdutDayWechatUser;
+import com.gdutelc.framework.common.HttpStatus;
 import com.gdutelc.framework.exception.ServiceException;
 import com.gdutelc.service.adapter.AbstractLoginAdapter;
 import com.gdutelc.utils.GdutDayCookieJar;
@@ -116,10 +117,10 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
         // 由于存在账号密码输入错误，所以只重试1次，不然错误密码次数过多很快就要滑块了
         try (Response responses = okHttpUtils.postByFormUrl(myokHttpClient, GRADUATE_EHALL_LOGIN, requestBody)) {
             if (responses.code() != 200) {
-                throw new ServiceException("账号或密码错误", responses.code());
+                throw new ServiceException("账号或密码错误", HttpStatus.BAD_REQUEST);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new ServiceException("网络请求异常，请重试！", HttpStatus.ERROR);
         }
     }
 
@@ -128,10 +129,10 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
         // 构造空的请求体
         try (Response response = okHttpUtils.postByFormUrl(okHttpClient, url, RequestBody.create(new byte[0]))) {
             if (response.code() != 200) {
-                throw new ServiceException("登录异常，请重新登录", response.code());
+                throw new ServiceException("登录异常，请重新登录！", HttpStatus.FORBIDDEN);
             }
         } catch (ServiceException e) {
-            throw new RuntimeException(e);
+            throw new ServiceException("网络请求异常，请重试！", HttpStatus.ERROR);
         }
 
 

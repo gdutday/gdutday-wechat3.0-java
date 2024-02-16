@@ -2,6 +2,8 @@ package com.gdutelc.utils;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.gdutelc.framework.common.HttpStatus;
+import com.gdutelc.framework.exception.ServiceException;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
@@ -182,11 +184,10 @@ public class LiUtils {
             }
         } catch (WriterException | IOException
                  | NullPointerException e) {
-            e.printStackTrace();
+            throw new ServiceException("网络请求异常，请重试！", HttpStatus.ERROR);
         }
         return "";
     }
-
 
 
 }

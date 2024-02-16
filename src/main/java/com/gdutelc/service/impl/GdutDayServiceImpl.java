@@ -337,7 +337,7 @@ public class GdutDayServiceImpl implements GdutDayService {
     public ArrayList<ExaminationDto> getExaminationInfo(String cookies, Integer userType, Integer term) {
         term = (term / 10) * 100 + term % 10;
         HashMap<String, String> map = new HashMap<>();
-        map.put("xnxqdm", term+"");
+        map.put("xnxqdm", term + "");
         map.put("page", "1");
         map.put("rows", "200");
         map.put("sort", "zc,xq,jcdm2");
@@ -350,10 +350,10 @@ public class GdutDayServiceImpl implements GdutDayService {
         try {
             content = response.body().string();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ServiceException("网络请求异常，请重试！", HttpStatus.ERROR);
         }
         if (response.code() != 200 || StringUtils.isEmpty(content)) {
-            throw new ServiceException("获取课表出现问题", response.code());
+            throw new ServiceException("获取课表出现问题，请重试！", HttpStatus.BAD_REQUEST);
         }
         JSONObject object = JSON.parseObject(content);
         JSONArray rows = object.getJSONArray("rows");
@@ -383,7 +383,7 @@ public class GdutDayServiceImpl implements GdutDayService {
         }
         if (response.code() != 200) {
             response.close();
-            throw new ServiceException("获取验证码失败", response.code());
+            throw new ServiceException("获取验证码失败，请重试！", HttpStatus.BAD_REQUEST);
         }
         String header = response.header("Set-Cookie");
         if (StringUtils.isEmpty(header)) {
@@ -396,7 +396,7 @@ public class GdutDayServiceImpl implements GdutDayService {
             base64 = LiUtils.makeBase64(bytes);
         } catch (IOException e) {
             response.close();
-            throw new RuntimeException(e);
+            throw new ServiceException("获取验证码失败，请重试！", HttpStatus.BAD_REQUEST);
         }
         return new VerCodeDto(base64, header);
     }
@@ -412,12 +412,12 @@ public class GdutDayServiceImpl implements GdutDayService {
             String content = response.body().string();
             Matcher matcher = regex.matcher(content);
             if (!matcher.find()) {
-                throw new ServiceException("请重新登录！", HttpStatus.BAD_REQUEST);
+                throw new ServiceException("身份信息过期，请重新登录！", HttpStatus.BAD_REQUEST);
             }
             String termId = matcher.group(0).replace("<option value='", "").replace("' selected>", "");
             return termId.substring(0, termId.length() - 2) + termId.charAt(termId.length() - 1);
         } catch (Exception e) {
-            throw new ServiceException("请重新登录！", HttpStatus.BAD_REQUEST);
+            throw new ServiceException("身份信息过期，请重新登录！", HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -441,11 +441,10 @@ public class GdutDayServiceImpl implements GdutDayService {
     public boolean changeAdmissionDate(String date) {
         //
         DateTimeFormatter ft = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
         try {
             LocalDate.parse(date, ft);
         } catch (Exception e) {
-            throw new ServiceException("Please enter the correct date！");
+            throw new ServiceException("Please enter the correct date！", HttpStatus.ERROR);
         }
         // 内部使用 懒得加锁
         gdutConfig.setAdmissionDate(date);
