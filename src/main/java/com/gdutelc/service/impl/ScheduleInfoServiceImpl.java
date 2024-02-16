@@ -321,7 +321,7 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
             assert response.body() != null;
             content = response.body().string();
             if (response.code() != 200 || StringUtils.isEmpty(content)) {
-                throw new ServiceException("获取课表出现问题", response.code());
+                throw new ServiceException("请求课表异常，请重试！", HttpStatus.f006);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -410,7 +410,7 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
             }
             return ansMap;
         } catch (JSONException e) {
-            throw new ServiceException("数据转换请求异常，请检查身份是否过期，请联系开发人员", 400);
+            throw new ServiceException("网络请求异常，请重试！", HttpStatus.f5001);
         }
 
     }
@@ -437,7 +437,7 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
             return Integer.parseInt(data.getString("WID"));
         } catch (IOException e) {
             LOG.warn(e.getMessage());
-            throw new ServiceException("网络请求异常，请重试！", HttpStatus.ERROR);
+            throw new ServiceException("网络请求异常，请重试！", HttpStatus.f5001);
         }
     }
 

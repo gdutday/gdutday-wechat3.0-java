@@ -42,7 +42,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
             case JXFW_LOGIN -> {
                 // 只有本科才能使用教务系统直接登录
                 if (!UNDER_GRADUATE.equals(gdutDayWechatUser.getUserType())) {
-                    throw new ServiceException("登录类型错误！",HttpStatus.FORBIDDEN);
+                    throw new ServiceException("登录类型错误！",HttpStatus.f003);
                 }
                 return jxfwLogin(gdutDayWechatUser);
             }
@@ -77,7 +77,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
      */
     public boolean checkBlock(String user) {
         if (StringUtils.isEmpty(user)) {
-            throw new ServiceException("请检查请求参数！", HttpStatus.FORBIDDEN);
+            throw new ServiceException("请检查请求参数！", HttpStatus.f002);
         }
         OkHttpClient myokHttpClient = okHttpUtils.makeOkhttpClient();
         HashMap<String, String> map = new HashMap<>(3);
@@ -89,7 +89,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
             JSONObject object;
             if (response1.code() != 200 || response1.body() == null) {
                 log.error("统一认证滑块链接请求异常");
-                throw new ServiceException("网络请求异常，请重试！");
+                throw new ServiceException("网络请求异常，请重试！",HttpStatus.f5001);
             }
             object = JSONObject.parseObject(response1.body().string());
             boolean isNeed = (boolean) object.get("isNeed");
@@ -100,7 +100,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
                 return false;
             }
         } catch (IOException e) {
-            throw new ServiceException("网络请求异常，请重试！");
+            throw new ServiceException("网络请求异常，请重试！",HttpStatus.f5001);
         }
     }
 
@@ -128,7 +128,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
             // 从登录的账号获得用户类型
             int userType = getUserInfoFromEhall(myokHttpClient);
             if (userType < 0) {
-                throw new ServiceException("请检查请求参数！", HttpStatus.FORBIDDEN);
+                throw new ServiceException("请检查请求参数！", HttpStatus.f002);
             }
             if (userType == UNDER_GRADUATE) {
                 // 本科登录，传入本科教务系统地址
@@ -145,7 +145,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
             }
             return new LoginDto(cookieStr, userType);
         } catch (IOException e) {
-            throw new ServiceException("网络请求异常，请重试！", HttpStatus.ERROR);
+            throw new ServiceException("网络请求异常，请重试！", HttpStatus.f5001);
         }
     }
 
@@ -175,7 +175,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
         }
         userNum = OkHttpUtils.getUid(html);
         if (userNum == null) {
-            throw new ServiceException("账号或密码错误！", HttpStatus.FORBIDDEN);
+            throw new ServiceException("账号或密码错误！", HttpStatus.f005);
         }
         // 获得用户第一位编号
         int userType = Integer.parseInt(userNum.substring(0, 1));

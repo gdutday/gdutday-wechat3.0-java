@@ -184,7 +184,7 @@ public class LiUtils {
             }
         } catch (WriterException | IOException
                  | NullPointerException e) {
-            throw new ServiceException("网络请求异常，请重试！", HttpStatus.ERROR);
+            throw new ServiceException("网络请求异常，请重试！", HttpStatus.f5001);
         }
         return "";
     }

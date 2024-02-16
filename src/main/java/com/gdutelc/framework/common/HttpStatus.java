@@ -92,4 +92,33 @@ public class HttpStatus
      * 系统警告消息
      */
     public static final int WARN = 601;
+
+    /**
+     * * 请求验证码失败，请重试！ 4001
+     * * 请检查请求参数！ 4002
+     * * 登录类型错误！4003
+     * * 登录异常，请重新登录！（出现风控页面） 4004
+     * * 账号或密码错误 4005
+     * * 请求课表异常，请重试！(请求页面出现问题) 4006
+     * * 身份信息过期，请重新登录！ 4007
+     * * 请求成绩异常，请重试！ 4008
+     * * 请求考试安排异常，请重试！4009
+     * * Please enter the correct date！修改课程格式错误）4010
+     ** 验证码过期 4011
+     */
+    public static final int f001=4001;
+
+    public static final int f002=4002;
+    public static final int f003=4003;
+    public static final int f004=4004;
+    public static final int f005=4005;
+    public static final int f006=4006;
+    public static final int f007=4007;
+    public static final int f008=4008;
+    public static final int f009=4009;
+    public static final int f010=4010;
+    public static final int f011=4011;
+    public static final int f5001=5001;
+    public static final int f5002=5002;
+
 }

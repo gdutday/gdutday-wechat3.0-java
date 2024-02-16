@@ -64,7 +64,7 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
             if (response.code() != 200 || object.getInteger("code") != 0) {
                 String message = object.getString("message");
                 throw new ServiceException(message.equals("连接已过期") ? "验证码过期" : message
-                        , response.code() == 200 ? 400 : response.code());
+                        , HttpStatus.f011);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -82,7 +82,7 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
             throw new RuntimeException(e);
         }
         if (!okHttpUtils.checkStatus(html)) {
-            throw new ServiceException("登录异常，请重新登录", 400);
+            throw new ServiceException("登录异常，请重新登录", HttpStatus.f003);
         }
 
         Document doc = Jsoup.parse(html);
@@ -117,10 +117,10 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
         // 由于存在账号密码输入错误，所以只重试1次，不然错误密码次数过多很快就要滑块了
         try (Response responses = okHttpUtils.postByFormUrl(myokHttpClient, GRADUATE_EHALL_LOGIN, requestBody)) {
             if (responses.code() != 200) {
-                throw new ServiceException("账号或密码错误", HttpStatus.BAD_REQUEST);
+                throw new ServiceException("账号或密码错误", HttpStatus.f005);
             }
         } catch (Exception e) {
-            throw new ServiceException("网络请求异常，请重试！", HttpStatus.ERROR);
+            throw new ServiceException("内部异常！", HttpStatus.f5001);
         }
     }
 
@@ -129,10 +129,10 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
         // 构造空的请求体
         try (Response response = okHttpUtils.postByFormUrl(okHttpClient, url, RequestBody.create(new byte[0]))) {
             if (response.code() != 200) {
-                throw new ServiceException("登录异常，请重新登录！", HttpStatus.FORBIDDEN);
+                throw new ServiceException("登录异常，请重新登录！", HttpStatus.f003);
             }
         } catch (ServiceException e) {
-            throw new ServiceException("网络请求异常，请重试！", HttpStatus.ERROR);
+            throw new ServiceException("内部异常！", HttpStatus.f5001);
         }
 
 

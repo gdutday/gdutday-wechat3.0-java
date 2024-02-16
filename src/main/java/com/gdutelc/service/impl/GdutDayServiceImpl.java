@@ -150,7 +150,8 @@ public class GdutDayServiceImpl implements GdutDayService {
             assert response.body() != null;
             content = response.body().string();
         } catch (IOException e) {
-            throw new ServiceException("课表获取失败，请重试！", 400);
+            LOGGER.warn(e.getMessage());
+            throw new ServiceException(" 网络请求异常，请重试！", HttpStatus.f5001);
         }
 
         return getGraduateScheduleDataClear(content);
@@ -236,9 +237,11 @@ public class GdutDayServiceImpl implements GdutDayService {
                 }
             }
         } catch (NumberFormatException e) {
-            throw new ServiceException("数据处理异常，请联系开发者！", HttpStatus.BAD_REQUEST);
+            LOGGER.warn(e.getMessage());
+            throw new ServiceException(" 网络请求异常，请重试！", HttpStatus.f5001);
         } catch (JSONException e) {
-            throw new ServiceException("请检查输入参数，请求异常！", HttpStatus.BAD_REQUEST);
+            LOGGER.warn(e.getMessage());
+            throw new ServiceException(" 网络请求异常，请重试！", HttpStatus.f5001);
         }
         return map;
     }
@@ -267,10 +270,10 @@ public class GdutDayServiceImpl implements GdutDayService {
             assert response.body() != null;
             content = response.body().string();
             if (response.code() != 200 || StringUtils.isEmpty(content)) {
-                throw new ServiceException("获取课表出现问题", response.code());
+                throw new ServiceException("请求课表异常，请重试！", HttpStatus.f006);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ServiceException("IO异常！", HttpStatus.f5001);
         }
         JSONObject jsonObject;
         try {
@@ -310,7 +313,7 @@ public class GdutDayServiceImpl implements GdutDayService {
             }
             return ansMap;
         } catch (JSONException e) {
-            throw new ServiceException("数据转换请求异常，多次出现该提示，请联系开发人员", 400);
+            throw new ServiceException("JSON处理异常！", HttpStatus.f5001);
         }
 
     }
@@ -350,10 +353,10 @@ public class GdutDayServiceImpl implements GdutDayService {
         try {
             content = response.body().string();
         } catch (IOException e) {
-            throw new ServiceException("网络请求异常，请重试！", HttpStatus.ERROR);
+            throw new ServiceException("内部IO异常！", HttpStatus.f5001);
         }
         if (response.code() != 200 || StringUtils.isEmpty(content)) {
-            throw new ServiceException("获取课表出现问题，请重试！", HttpStatus.BAD_REQUEST);
+            throw new ServiceException("请求考试安排异常，请重试！", HttpStatus.f009);
         }
         JSONObject object = JSON.parseObject(content);
         JSONArray rows = object.getJSONArray("rows");
@@ -383,7 +386,7 @@ public class GdutDayServiceImpl implements GdutDayService {
         }
         if (response.code() != 200) {
             response.close();
-            throw new ServiceException("获取验证码失败，请重试！", HttpStatus.BAD_REQUEST);
+            throw new ServiceException("请求验证码失败，请重试！", HttpStatus.f001);
         }
         String header = response.header("Set-Cookie");
         if (StringUtils.isEmpty(header)) {
@@ -396,7 +399,7 @@ public class GdutDayServiceImpl implements GdutDayService {
             base64 = LiUtils.makeBase64(bytes);
         } catch (IOException e) {
             response.close();
-            throw new ServiceException("获取验证码失败，请重试！", HttpStatus.BAD_REQUEST);
+            throw new ServiceException("请求验证码失败，请重试！", HttpStatus.f001);
         }
         return new VerCodeDto(base64, header);
     }
@@ -412,12 +415,13 @@ public class GdutDayServiceImpl implements GdutDayService {
             String content = response.body().string();
             Matcher matcher = regex.matcher(content);
             if (!matcher.find()) {
-                throw new ServiceException("身份信息过期，请重新登录！", HttpStatus.BAD_REQUEST);
+                throw new ServiceException("身份信息过期，请重新登录！", HttpStatus.f007);
             }
             String termId = matcher.group(0).replace("<option value='", "").replace("' selected>", "");
             return termId.substring(0, termId.length() - 2) + termId.charAt(termId.length() - 1);
         } catch (Exception e) {
-            throw new ServiceException("身份信息过期，请重新登录！", HttpStatus.BAD_REQUEST);
+            LOGGER.warn(e.getMessage());
+            throw new ServiceException("内部异常！", HttpStatus.f5001);
         }
 
     }
@@ -444,7 +448,7 @@ public class GdutDayServiceImpl implements GdutDayService {
         try {
             LocalDate.parse(date, ft);
         } catch (Exception e) {
-            throw new ServiceException("Please enter the correct date！", HttpStatus.ERROR);
+            throw new ServiceException("Please enter the correct date！", HttpStatus.f010);
         }
         // 内部使用 懒得加锁
         gdutConfig.setAdmissionDate(date);
