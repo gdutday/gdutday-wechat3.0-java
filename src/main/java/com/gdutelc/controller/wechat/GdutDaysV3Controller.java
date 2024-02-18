@@ -125,7 +125,7 @@ public class GdutDaysV3Controller {
      * @return
      */
     @PostMapping("/score")
-    public AjaxResult exam(@RequestBody BaseRequestDto baseRequestDto) {
+    public AjaxResult exam(@Validated @RequestBody BaseRequestDto baseRequestDto) {
         return AjaxResult.success(examScoreService.getExamScore(baseRequestDto));
     }
 
@@ -135,7 +135,7 @@ public class GdutDaysV3Controller {
      * @return
      */
     @PostMapping("/userInfo")
-    public AjaxResult userInfo(@RequestBody BaseRequestDto baseRequestDto) {
+    public AjaxResult userInfo(@Validated @RequestBody BaseRequestDto baseRequestDto) {
         return AjaxResult.success(gdutDayService.getUserInfo(baseRequestDto.getCookies(), baseRequestDto.getUserType()));
     }
 
@@ -146,7 +146,7 @@ public class GdutDaysV3Controller {
      * @return
      */
     @PostMapping("/examination")
-    public AjaxResult examination(@RequestBody ExaminationReqDto reqDto) {
+    public AjaxResult examination(@Validated @RequestBody ExaminationReqDto reqDto) {
         return AjaxResult.success(gdutDayService.getExaminationInfo(reqDto.getCookies(), reqDto.getUserType(), reqDto.getTermId()));
     }
 
@@ -158,7 +158,7 @@ public class GdutDaysV3Controller {
      */
 
     @PostMapping("/getTerm")
-    public AjaxResult getTerm(@RequestBody BaseRequestDto baseRequestDto) {
+    public AjaxResult getTerm(@Validated @RequestBody BaseRequestDto baseRequestDto) {
         return AjaxResult.success("获取最新学期成功！", gdutDayService.getTerm(baseRequestDto));
     }
 
@@ -174,7 +174,7 @@ public class GdutDaysV3Controller {
      * @return
      */
     @PostMapping("/admissionDate")
-    private AjaxResult changeTerm(@RequestBody AdmissionDateDto admissionDateDto) {
+    private AjaxResult changeTerm(@Validated @RequestBody AdmissionDateDto admissionDateDto) {
         String date = loginService.loginDecrypt(admissionDateDto.getAdmissionDate());
         return AjaxResult.success("修改开学时间为：" + date, gdutDayService.changeAdmissionDate(date));
     }

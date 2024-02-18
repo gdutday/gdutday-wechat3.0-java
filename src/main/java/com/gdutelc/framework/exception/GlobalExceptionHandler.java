@@ -70,6 +70,15 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * 参数异常
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public AjaxResult handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletRequest request) {
+        log.error(e.getMessage(), e);
+        return AjaxResult.error(HttpStatus.f002,"请求参数错误："+e.getBindingResult().getFieldError().getDefaultMessage());
+    }
+
+    /**
      * 拦截未知的运行时异常
      */
     @ExceptionHandler(RuntimeException.class)
@@ -99,14 +108,14 @@ public class GlobalExceptionHandler {
         return AjaxResult.error(message);
     }
 
-    /**
-     * 自定义验证异常
-     */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Object handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        log.error(e.getMessage(), e);
-        String message = e.getBindingResult().getFieldError().getDefaultMessage();
-        return AjaxResult.error(message);
-    }
+//    /**
+//     * 自定义验证异常
+//     */
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public Object handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+//        log.error(e.getMessage(), e);
+//        String message = e.getBindingResult().getFieldError().getDefaultMessage();
+//        return AjaxResult.error(message);
+//    }
 
 }
