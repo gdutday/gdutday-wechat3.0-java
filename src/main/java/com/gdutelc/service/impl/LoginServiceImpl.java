@@ -63,8 +63,13 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
             JSONObject object = JSONObject.parseObject(bodyStr);
             if (response.code() != 200 || object.getInteger("code") != 0) {
                 String message = object.getString("message");
-                throw new ServiceException(message.equals("连接已过期") ? "验证码过期" : message
-                        , HttpStatus.f011);
+//                throw new ServiceException(message.equals("连接已过期") ? "验证码过期" : message
+//                        , HttpStatus.f011);
+                if(message.equals("验证码不正确")){
+                    throw new ServiceException(message,HttpStatus.f011);
+                }else{
+                    throw new ServiceException("账号或密码错误",HttpStatus.f005);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
