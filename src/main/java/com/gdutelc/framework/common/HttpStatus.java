@@ -104,7 +104,8 @@ public class HttpStatus
      * * 请求成绩异常，请重试！ 4008
      * * 请求考试安排异常，请重试！4009
      * * Please enter the correct date！修改课程格式错误）4010
-     ** 验证码过期 4011
+     * * 验证码过期 4011
+     * * json解析错误，可能是cookie错误或过期，请重新登录
      */
     public static final int f001=4001;
 
@@ -118,6 +119,7 @@ public class HttpStatus
     public static final int f009=4009;
     public static final int f010=4010;
     public static final int f011=4011;
+    public static final int f012=4012;
     public static final int f5001=5001;
     public static final int f5002=5002;
 

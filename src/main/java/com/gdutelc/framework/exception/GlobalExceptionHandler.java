@@ -1,5 +1,6 @@
 package com.gdutelc.framework.exception;
 
+import com.alibaba.fastjson.JSONException;
 import com.gdutelc.framework.common.HttpStatus;
 import com.gdutelc.framework.domain.AjaxResult;
 import com.gdutelc.utils.StringUtils;
@@ -58,6 +59,14 @@ public class GlobalExceptionHandler {
         log.error(e.getMessage(), e);
         Integer code = e.getCode();
         return StringUtils.isNotNull(code) ? AjaxResult.error(code, e.getMessage()) : AjaxResult.error(e.getMessage());
+    }
+    /**
+     * json解析异常
+     */
+    @ExceptionHandler(JSONException.class)
+    public AjaxResult handleJSONException(JSONException e, HttpServletRequest request) {
+        log.error(e.getMessage(), e);
+        return AjaxResult.error(HttpStatus.f012,"json解析错误，可能是cookie错误或过期，请重新登录");
     }
 
     /**
