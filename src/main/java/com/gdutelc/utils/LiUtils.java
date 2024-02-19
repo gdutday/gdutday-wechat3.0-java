@@ -43,7 +43,7 @@ public class LiUtils {
 
     private static final String ECB_ALGORITHM = "AES/ECB/PKCS7Padding";
 
-    private static final String SECRET = "gdutgdutgdutgdut";
+    private static final String SECRET = "gdutdingzhendays";
 
 
     static {
