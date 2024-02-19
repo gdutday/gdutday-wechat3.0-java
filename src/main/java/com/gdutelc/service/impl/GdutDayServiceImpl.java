@@ -419,6 +419,8 @@ public class GdutDayServiceImpl implements GdutDayService {
             }
             String termId = matcher.group(0).replace("<option value='", "").replace("' selected>", "");
             return termId.substring(0, termId.length() - 2) + termId.charAt(termId.length() - 1);
+        } catch (ServiceException e) {
+            throw new ServiceException("身份信息过期，请重新登录！", HttpStatus.f007);
         } catch (Exception e) {
             LOGGER.warn(e.getMessage());
             throw new ServiceException("内部异常！", HttpStatus.f5001);
