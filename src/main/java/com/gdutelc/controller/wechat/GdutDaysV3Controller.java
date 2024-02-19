@@ -1,5 +1,6 @@
 package com.gdutelc.controller.wechat;
 
+import com.beust.ah.A;
 import com.gdutelc.domain.query.AdmissionDateDto;
 import com.gdutelc.domain.query.BaseRequestDto;
 import com.gdutelc.domain.DTO.LoginDto;
@@ -14,8 +15,11 @@ import com.gdutelc.service.GdutDayService;
 import com.gdutelc.service.impl.LoginServiceImpl;
 import com.gdutelc.service.impl.NotificationServiceImpl;
 import com.gdutelc.service.impl.ScheduleInfoServiceImpl;
+import com.gdutelc.utils.LiUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -44,24 +48,31 @@ public class GdutDaysV3Controller {
     @Resource
     private ExamScoreService examScoreService;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(GdutDaysV3Controller.class);
+
     /**
      * 测试
+     *
      * @return
      */
     @GetMapping("/test")
     public Object test() {
+
         return notificationService.getHiMessage();
     }
 
     /**
      * 登录
+     *
      * @param gdutDayWechatUser
      * @return
      */
     @PostMapping("/login")
     public AjaxResult login(@RequestBody GdutDayWechatUser gdutDayWechatUser) {
 //        // V3解密
-//        gdutDayWechatUser.setPassword(loginService.loginDecrypt(gdutDayWechatUser.getPassword()));
+        String pw = LiUtils.loginECBPkcs7PAddingDecrypt(gdutDayWechatUser.getPassword());
+        gdutDayWechatUser.setPassword(pw);
+        // LOGGER.info("解密："+pw);
         LoginDto loginDto = loginService.gdutDayWechatUserLogin(gdutDayWechatUser);
         return AjaxResult.success(loginDto);
     }
@@ -80,6 +91,7 @@ public class GdutDaysV3Controller {
 
     /**
      * 验证码
+     *
      * @param request
      * @return
      */
@@ -92,6 +104,7 @@ public class GdutDaysV3Controller {
 
     /**
      * 图书馆二维码
+     *
      * @param stuId
      * @param width
      * @param height
@@ -131,6 +144,7 @@ public class GdutDaysV3Controller {
 
     /**
      * 获得用户信息
+     *
      * @param baseRequestDto
      * @return
      */
