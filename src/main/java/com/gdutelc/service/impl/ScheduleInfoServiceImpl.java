@@ -231,8 +231,25 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
                         // 正常的 1-11周
                         String[] strings1 = string.split("-");
                         int startCd = Integer.parseInt(strings1[0]);
-                        int endCd = Integer.parseInt(strings1[1]);
+                        int endCd=-1;
+                        // 0 表明
+                        int oddsFlag = -1;
+                        // 单双周特殊判断
+                        if (strings1[1].contains("双")) {
+                            oddsFlag = 0;
+                            endCd = Integer.parseInt(strings1[1].replace("双", ""));
+                        } else if (strings1[1].contains("单")) {
+                            oddsFlag = 1;
+                            endCd = Integer.parseInt(strings1[1].replace("单", ""));
+                        }else{
+                            endCd = Integer.parseInt(strings1[1]);
+                        }
+
                         for (int j = startCd; j <= endCd; j++) {
+                            // 跳过不符合要求的周次
+                            if (oddsFlag >= 0 && !(j % 2 == oddsFlag)) {
+                                continue;
+                            }
                             ArrayList<ScheduleInfoDto> scheduleInfoDtos = map.get(String.valueOf(j));
                             ScheduleInfoDto scheduleInfoDto1 = new ScheduleInfoDto();
                             // 使用浅拷贝，原来的引用不会被修改
@@ -251,6 +268,7 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
                 }
             }
         } catch (NumberFormatException e) {
+//            LOG.info(e.getMessage());
             throw new ServiceException("数据处理异常，请检查身份是否过期！", HttpStatus.BAD_REQUEST);
         } catch (JSONException e) {
             throw new ServiceException("请检查输入参数或者身份是否过期！", HttpStatus.BAD_REQUEST);
