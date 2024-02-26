@@ -193,16 +193,27 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
                 //课程名称
                 scheduleInfoDto.setCourseName(jsonObject1.getString("KCMC"));
                 //地点
-                String classroom = jsonObject1.getString("JASMC").replace("(", "")
-                        .replace(")", "").replace("专用课室", "")
-                        .replace("（", "").replace("）", "").replace(" ", "");
+                String classroom = "未安排教室";
+                if (StringUtils.isNotEmpty(jsonObject1.getString("JASMC"))) {
+                    classroom = jsonObject1.getString("JASMC").replace("(", "")
+                            .replace(")", "").replace("专用课室", "")
+                            .replace("（", "").replace("）", "").replace(" ", "");
+                }
                 scheduleInfoDto.setCoursePlace(classroom);
+                String teacher = "未安排老师";
+                if (StringUtils.isNotEmpty(jsonObject1.getString("JSXM"))) {
+                    teacher = jsonObject1.getString("JSXM");
+                }
                 //老师
-                scheduleInfoDto.setCourseTeacher(jsonObject1.getString("JSXM"));
+                scheduleInfoDto.setCourseTeacher(teacher);
                 //星期
                 scheduleInfoDto.setCourseDay(jsonObject1.getString("XQ"));
                 // 课程描述
-                scheduleInfoDto.setCourseDescription(jsonObject1.getString("BJMC"));
+                String description = "暂无课程描述";
+                if (StringUtils.isNotEmpty(jsonObject1.getString("BJMC"))) {
+                    description = jsonObject1.getString("BJMC");
+                }
+                scheduleInfoDto.setCourseDescription(description);
                 //节次
                 Integer startTime = jsonObject1.getInteger("KSSJ");
                 Integer endTime = jsonObject1.getInteger("JSSJ");
@@ -231,7 +242,7 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
                         // 正常的 1-11周
                         String[] strings1 = string.split("-");
                         int startCd = Integer.parseInt(strings1[0]);
-                        int endCd=-1;
+                        int endCd = -1;
                         // 0 表明
                         int oddsFlag = -1;
                         // 单双周特殊判断
@@ -241,7 +252,7 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
                         } else if (strings1[1].contains("单")) {
                             oddsFlag = 1;
                             endCd = Integer.parseInt(strings1[1].replace("单", ""));
-                        }else{
+                        } else {
                             endCd = Integer.parseInt(strings1[1]);
                         }
 
