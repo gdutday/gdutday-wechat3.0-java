@@ -37,3 +37,16 @@ if [ $? -eq 0 ]; then
 else
     echo "Failed to push the Docker image."
 fi
+
+docker stop gdutday3
+
+docker rm gdutday3
+
+docker run -d  -p 1888:8080 --name gdutday3 --restart=always reg.gdutelc.com/gdutday/gdutday:latest
+
+# 如果部署成功，则输出提示信息
+if [ $? -eq 0 ]; then
+    echo "Successfully deploy new container with tag $VERSION"
+else
+    echo "Failed to deploy the container."
+fi
