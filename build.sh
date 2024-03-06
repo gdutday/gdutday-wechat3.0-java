@@ -22,7 +22,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # 给镜像加上 latest 标签
-docker tag reg.gdutelc.com/gdutday/gdutday:"$VERSION" reg.gdutelc.com/gdutday/gdutday:latest
+docker tag reg.gdutelc.com/gdutday/gdutday:"$VERSION" registry.gdutelc.com/gdutday/gdutday:latest
 
 # 登录 Docker 注册表（请替换为实际的用户名、密码和注册表地址）
 # echo "your-username" | docker login -u "your-username" --password-stdin registry.example.com
@@ -42,7 +42,7 @@ docker stop gdutday3
 
 docker rm gdutday3
 
-docker run -d  -p 1888:8080 --name gdutday3 --restart=always reg.gdutelc.com/gdutday/gdutday:latest
+docker run -d  -p 1888:8080 --name gdutday3 --restart=always registry.gdutelc.com/gdutday/gdutday:latest
 
 # 如果部署成功，则输出提示信息
 if [ $? -eq 0 ]; then
