@@ -133,19 +133,14 @@ image-sign:
     - dev
   before_script:
     - echo "============================ CHANGE APT MIRROR ============================="
-    - cat <<'EOF' > '/etc/apt/sources.list
-      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
+    - echo 'deb http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
       deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
       deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
       deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
       deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
       deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
       deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
-      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
-      \# 预发布软件源，不建议启用
-      \# deb http://mirrors.gdut.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
-      \# deb-src http://mirrors.gdut.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
-      EOF'
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse' > /etc/apt/sources.list
     - apt update
     - echo "=============================== INSTALL WGET ==============================="
     - apt install wget -y
@@ -183,19 +178,14 @@ docker-deploy:
     - dev
   before_script:
     - echo "============================ CHANGE APT MIRROR ============================="
-    - cat <<'EOF' > '/etc/apt/sources.list
-      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
+    - echo 'deb http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
       deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
       deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
       deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
       deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
       deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
       deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
-      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
-      \# 预发布软件源，不建议启用
-      \# deb http://mirrors.gdut.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
-      \# deb-src http://mirrors.gdut.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
-      EOF'
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse' > /etc/apt/sources.list
     - apt update
     - echo "========================== DOWNLOAD OPENSSH CLIENT ========================="
     ##
