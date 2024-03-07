@@ -1,22 +1,34 @@
 package com.gdutelc.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.gdutelc.common.constant.UrlConstant;
 import com.gdutelc.domain.DTO.LoginDto;
 import com.gdutelc.domain.GdutDayWechatUser;
+import com.gdutelc.framework.common.HttpStatus;
+import com.gdutelc.framework.exception.ServiceException;
 import com.gdutelc.service.adapter.AbstractLoginAdapter;
 import com.gdutelc.utils.GdutDayCookieJar;
 import com.gdutelc.utils.JsoupUtils;
+import com.gdutelc.utils.LiUtils;
 import com.gdutelc.utils.OkHttpUtils;
 import jakarta.annotation.Resource;
-import okhttp3.Headers;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.gdutelc.common.constant.UrlConstant.GRADUATE_EHALL_LOGIN;
+import static com.gdutelc.common.constant.UrlConstant.JXFW_LOGIN;
 
 /**
  * @author Ymri
@@ -24,6 +36,7 @@ import java.io.IOException;
  * @since 2023/9/29 01:47
  * LoginServiceImpl
  */
+@Slf4j
 @Service
 public class LoginServiceImpl extends AbstractLoginAdapter {
 
@@ -32,47 +45,106 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
 
     @Override
     public LoginDto jxfwLogin(GdutDayWechatUser gdutDayWechatUser) {
-        /**
-         * 1.本科登录
-         * 2.自动身份
-         * 3.通过认证
-         */
-        return null;
-    }
-
-    @Override
-    public LoginDto ehallLogin(GdutDayWechatUser gdutDayWechatUser) {
-        /**
-         * 全局共用一个okhttp，但是每次都复用okhttpclinent,
-         * 严格使用工具new okhttp,登录的时候直接传入new的cookie,最后记得释放和清空
-         * 除登录外其他可直接复用全局的，需要先清除
-         * 1.拿到页面参数
-         * 2.通过登录
-         * 3.身份校验
-         * 4.通过认证
-         */
-        try {
-            GdutDayCookieJar cookieJar = new GdutDayCookieJar();
-            OkHttpClient myokHttpClient = okHttpUtils.makeOkhttpClient(cookieJar);
-            Response response = okHttpUtils.get(myokHttpClient, UrlConstant.GRADUATE_LOGIN);
-            //response.body().string();
+        GdutDayCookieJar gdutDayCookieJar = new GdutDayCookieJar();
+        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient(gdutDayCookieJar);
+        HashMap<String, String> map = new HashMap<>(6);
+        map.put("account", gdutDayWechatUser.getUser());
+        map.put("pwd", gdutDayWechatUser.getPassword());
+        map.put("verifycode", gdutDayWechatUser.getCode());
+        RequestBody requestBody = JsoupUtils.map2PostUrlCodeString(map);
+        Request request = new Request.Builder()
+                .header("Cookie", gdutDayWechatUser.getJSessionId())
+                .post(requestBody)
+                .url(JXFW_LOGIN)
+                .build();
+        try (Response response = okHttpClient.newCall(request).execute()) {
             assert response.body() != null;
-            String html = response.body().string();
-            if (!okHttpUtils.checkStatus(html)) {
-                return null;
+            String bodyStr = response.body().string();
+            JSONObject object = JSONObject.parseObject(bodyStr);
+            if (response.code() != 200 || object.getInteger("code") != 0) {
+                String message = object.getString("message");
+//                throw new ServiceException(message.equals("连接已过期") ? "验证码过期" : message
+//                        , HttpStatus.f011);
+                if (message.equals("验证码不正确")) {
+                    throw new ServiceException(message, HttpStatus.f011);
+                } else {
+                    throw new ServiceException("账号或密码错误", HttpStatus.f005);
+                }
             }
-            response.close();
-            RequestBody requestBody = JsoupUtils.getLoginForm(html, gdutDayWechatUser);
-
-            // 发送登录请求, 待完善...
-            response = okHttpUtils.postByFormUrl(myokHttpClient, UrlConstant.GRADUATE_LOGIN, requestBody);
-            // 从cookieJar 里面拿到登录过的cookies，然后返回
-            Headers headers = response.headers();
-            // 返回DTO还没统一，先全部丢到AjaxResult
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return null;
+        return new LoginDto(gdutDayWechatUser.getJSessionId(), gdutDayWechatUser.getUserType());
+    }
+
+    @Override
+    public void preLogin(GdutDayWechatUser gdutDayWechatUser, OkHttpClient myokHttpClient) {
+        String html;
+        try (Response response = okHttpUtils.get(myokHttpClient, UrlConstant.EHALL_URL)) {
+            assert response.body() != null;
+            html = response.body().string();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        if (!okHttpUtils.checkStatus(html)) {
+            throw new ServiceException("登录异常，请重新登录", HttpStatus.f003);
+        }
+
+        Document doc = Jsoup.parse(html);
+        String pwdEncryptSalt = null;
+        Map<String, String> tempMap = new HashMap<>(10);
+        // 查找元素，例如查找id为"pwdFromId"的元素
+        Elements pwdFromIdElements = doc.select("#pwdFromId");
+        // 遍历找到的元素
+        for (Element pwdFromIdElement : pwdFromIdElements) {
+            // 查找该元素下的所有类型为"hidden"的input元素
+            Elements hiddenInputs = pwdFromIdElement.select("input[type=hidden]");
+            // 遍历这些input元素并获取它们的属性值
+            for (Element hiddenInput : hiddenInputs) {
+                String name = hiddenInput.attr("name");
+                String value = hiddenInput.attr("value");
+                if (!name.isEmpty()) {
+                    tempMap.put(name, value);
+                }
+                // 查找并保存盐值（"pwdEncryptSalt"）
+                String id = hiddenInput.attr("id");
+                if ("pwdEncryptSalt".equals(id)) {
+                    pwdEncryptSalt = value;
+                }
+            }
+        }
+        tempMap.put("", pwdEncryptSalt);
+        tempMap.put("rememberMe", "true");
+        tempMap.put("captcha", "");
+        tempMap.put("username", gdutDayWechatUser.getUser());
+        tempMap.put("password", LiUtils.cbcEncrypt(gdutDayWechatUser.getPassword(), pwdEncryptSalt));
+        RequestBody requestBody = JsoupUtils.map2PostUrlCodeString(tempMap);
+        // 由于存在账号密码输入错误，所以只重试1次，不然错误密码次数过多很快就要滑块了
+        try (Response responses = okHttpUtils.postByFormUrl(myokHttpClient, GRADUATE_EHALL_LOGIN, requestBody)) {
+            if (responses.code() != 200) {
+                throw new ServiceException("账号或密码错误", HttpStatus.f005);
+            }
+        } catch (ServiceException e) {
+            throw new ServiceException("账号或密码错误", HttpStatus.f005);
+        } catch (Exception e) {
+            throw new ServiceException("内部异常！", HttpStatus.f5001);
+        }
+    }
+
+    @Override
+    public void postLoginByUrl(String url, OkHttpClient okHttpClient) {
+        // 构造空的请求体
+        try (Response response = okHttpUtils.postByFormUrl(okHttpClient, url, RequestBody.create(new byte[0]))) {
+            if (response.code() != 200) {
+                throw new ServiceException("登录异常，请重新登录！", HttpStatus.f003);
+            }
+        } catch (ServiceException e) {
+            throw new ServiceException("登录异常，请重新登录！", HttpStatus.f003);
+        } catch (Exception e) {
+            throw new ServiceException("内部异常！", HttpStatus.f5001);
+        }
+
+
     }
 
 

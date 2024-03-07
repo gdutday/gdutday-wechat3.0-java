@@ -1,0 +1,242 @@
+image: ubuntu:22.04
+
+stages:
+  - build-phase-1
+  - build-phase-2
+  - build-phase-3
+  - build-phase-4
+
+cache:
+  paths:
+    - cache
+
+variables:
+  BIG_VERSION: v4.0
+
+maven-build:
+  image: maven:3.6-openjdk-17
+  stage: build-phase-1
+  tags:
+    - maven
+  before_script:
+    - echo "=========================== CHANGE MAVEN MIRROR ============================"
+    - echo '<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+            <localRepository>/cache/.m2</localRepository>
+            <mirrors>
+              <mirror>
+                <id>nexus-aliyun</id>
+                <mirrorOf>*</mirrorOf>
+                <name>Nexus aliyun</name>
+                <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+              </mirror>
+            </mirrors>
+            </settings>' > $HOME/.m2/settings.xml
+  script:
+    - echo "========================== GENERATE VERSION TAGS ==========================="
+    - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
+    - echo "The commit timestamp is $(echo $COMMIT_TIME | sed 's/[-T:.]//g')"
+    - echo "=========================== BUILD MAVEN PROJECT ============================"
+    - mvn package -Dmaven.test.sktip=true -DskipTests -Dmaven.repo.local=cache
+    - echo "=========================== EXPORT VERSION TAGS ============================"
+    - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
+    - echo "============================= EXPORT JAR FILE =============================="
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 30 min
+    reports:
+      dotenv: build.env
+  only:
+    - main
+    - dev
+
+#docker-build-and-push:
+#  image: registry.gdut.edu.cn/gcr.io/kaniko-project/executor:latest
+#  stage: build-phase-2
+#  tags:
+#    - kaniko
+#  script:
+#    - echo "================================= LOAD ENV ================================="
+#    - env
+#    - echo "COMMIT_TIME=${COMMIT_TIME}"
+#    - echo "=========================== BUILD IMAGE AND PUSH ==========================="
+#    - mkdir -p /kaniko/.docker
+#    - echo "{\"auths\":{\"${HARBORHOST}\":{\"auth\":\"$(printf "%s:%s" "${USERNAME}" "${PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+#    - /kaniko/executor
+#    - >-
+#      /kaniko/executor
+#      --context "${CI_PROJECT_DIR}"
+#      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+#      --destination "${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-${COMMIT_TIME}"
+#      --destination "${HARBORHOST}/gdutday/gdutday:latest"
+#  artifacts:
+#    reports:
+#      dotenv: build.env
+#    expire_in: 30 min
+#  only:
+#    - dev
+
+docker-build-and-push:
+  image: docker:stable
+  stage: build-phase-2
+  tags:
+    - Docker
+  services:
+    - name: docker:stable
+  script:
+    - echo "================================= LOAD ENV ================================="
+    - env
+    - echo "COMMIT_TIME=${COMMIT_TIME}"
+    - echo "============================= LOGIN TO HARBOR =============================="
+    - docker login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
+    - echo "=========================== BUILD DOCKER IMAGES ============================"
+    - docker build -t ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME) .
+    - echo "========================== TAG IMAGES WITH LATEST =========================="
+    - docker tag ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME) ${HARBORHOST}/gdutday/gdutday:latest
+    - echo "========================== PUSH IMAGES TO HARBOR ==========================="
+    - docker push ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    - docker push ${HARBORHOST}/gdutday/gdutday:latest
+    - echo "============================= CLEAN UP MIRRORS ============================="
+    - docker rmi ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    - echo "============================ EXPORT IMAGE TAGS ============================="
+    - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
+  artifacts:
+    reports:
+      dotenv: build.env
+    expire_in: 30 min
+  only:
+    - dev
+
+release-new-version:
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  stage: build-phase-2
+  tags:
+    - dev
+  script:
+    - echo "================================= LOAD ENV ================================="
+    - env
+    - echo "COMMIT_TIME=${COMMIT_TIME}"
+    - echo "=================== PUBLISH JAR FILE TO Package Registry ==================="
+    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/2/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
+  release:
+    tag_name: "${BIG_VERSION}-${COMMIT_TIME}"
+    description: "This is a release of version ${BIG_VERSION}-${COMMIT_TIME}."
+  allow_failure: true
+  only:
+    - main
+
+image-sign:
+  image: ubuntu:22.04
+  stage: build-phase-3
+  tags:
+    - dev
+  before_script:
+    - echo "============================ CHANGE APT MIRROR ============================="
+    - echo 'deb http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
+      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse' > /etc/apt/sources.list
+    - apt update -y
+    - echo "=============================== INSTALL WGET ==============================="
+    - apt install wget -y
+  script:
+    - echo "================================= LOAD ENV ================================="
+    - env
+    - echo "COMMIT_TIME=${COMMIT_TIME}"
+    - echo "============================== INSTALL COSIGN =============================="
+    - wget --no-check-certificate "https://az1.minio.gdutnic.com/gdutnic/public/cosign_1.6.0_amd64.deb"
+    - dpkg -i cosign_1.6.0_amd64.deb
+    - mv /usr/local/bin/cosign-linux-amd64 /usr/local/bin/cosign
+    - echo "=============================== KEY GENERATE ==============================="
+    - export COSIGN_PASSWORD=$PASSWORD
+    - cosign generate-key-pair
+    - echo "============================= LOGIN TO HARBOR =============================="
+    - cosign login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
+    - echo "=============================== IMAGE SIGN ================================="
+    - cosign sign --key cosign.key ${HARBORHOST}/gdutday/gdutday:latest
+    - echo "================================ EXPORT KEY ================================"
+    - echo "The Password of the key is Harbor account's password, the key will reserved for 30 minutes."
+    - echo "COMMIT_TIME=${COMMIT_TIME}" >> build.env
+  artifacts:
+    paths:
+      - cosign.key
+      - cosign.pub
+    reports:
+      dotenv: build.env
+    expire_in: 30 min
+  only:
+    - dev
+
+docker-deploy:
+  stage: build-phase-4
+  tags:
+    - dev
+  before_script:
+    - echo "============================ CHANGE APT MIRROR ============================="
+    - echo 'deb http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
+      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse' > /etc/apt/sources.list
+    - echo "========================== DOWNLOAD OPENSSH CLIENT ========================="
+    ##
+    ## Install ssh-agent if not already installed, it is required by Docker.
+    ## (change apt-get to yum if you use an RPM-based image)
+    ##
+    - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+    - echo "=============================== RUN SSH AGENT =============================="
+    ##
+    ## Run ssh-agent (inside the build environment)
+    ##
+    - eval $(ssh-agent -s)
+    - echo "======================= CHANGE PERMISSION OF SSH KEY ======================="
+    ##
+    ## Give the right permissions, otherwise ssh-add will refuse to add files
+    ## Add the SSH key stored in SSH_PRIVATE_KEY file type CI/CD variable to the agent store
+    ##
+    - chmod 400 "${SSH_PRIVATE_KEY}"
+    - ssh-add "${SSH_PRIVATE_KEY}"
+    - echo "================= CREATE SSH DIRECTORY AND GIVE PERMISSION ================="
+    ##
+    ## Create the SSH directory and give it the right permissions
+    ##
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "============================== ADD KNOWN HOSTS ============================="
+    ##
+    ## Assuming you created the SSH_KNOWN_HOSTS variable, uncomment the
+    ## following two lines.
+    ##
+    #- cp "${SSH_KNOWN_HOSTS}" ~/.ssh/known_hosts
+    #- chmod 644 ~/.ssh/known_hosts
+    ##
+    ## Alternatively, use ssh-keyscan to scan the keys of your private server.
+    ## Replace example.com with your private server's domain name. Repeat that
+    ## command if you have more than one server to connect to.
+    ##
+    - ssh-keyscan ${SERVER_HOST} >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - echo "============================= PULL LATEST IMAGE ============================"
+    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker pull ${HARBORHOST}/gdutday/gdutday:latest"
+    - echo "============================ GET OLD IMAGE INFO ============================"
+    - export OLD_IMAGE_INFO=$(ssh $SERVER_USERNAME@$SERVER_HOST "docker inspect --format='{{.Image}}' gdutday4")
+    - echo "============================ STOP OLD CONTAINER ============================"
+    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker stop gdutday4" || true
+    - echo "=========================== REMOVE OLD CONTAINER ==========================="
+    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker rm gdutday4" || true
+    - echo "============================= REMOVE OLD IMAGE ============================="
+    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker rmi ${OLD_IMAGE_INFO}" || true
+    - echo "=========================== DEPLOY NEW CONTAINER ==========================="
+    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker run -d  -p 1888:8080 --name gdutday4 --restart=always ${HARBORHOST}/gdutday/gdutday:latest"
+  only:
+    - dev

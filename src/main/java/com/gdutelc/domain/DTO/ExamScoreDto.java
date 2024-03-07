@@ -1,7 +1,6 @@
 package com.gdutelc.domain.DTO;
 
 import com.alibaba.fastjson2.annotation.JSONField;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,27 +18,47 @@ import java.io.Serializable;
 @ToString
 public class ExamScoreDto implements Serializable {
 
-    @ApiModelProperty(value = "课程名称")
-    @JSONField(name = "cn")
+
+    /**
+     * 课程名称
+     */
+    @JSONField(name = "KCMC")
     private String courseName;
 
-    @ApiModelProperty(value = "未知...从cType得到,猜测是courseType")
-    @JSONField(name = "cType")
+    /**
+     * 子课程类型，比如科学类还是其他
+     */
     private String courseType;
 
-    @ApiModelProperty(value = "学分")
-    @JSONField(name = "credit")
-    private Double credit;
+    /**
+     * 学分
+     */
+    @JSONField(name = "XF")
+    private String credit;
 
-    @ApiModelProperty(value = "绩点，计算出来的，研究生和本科计算方式不同，具体见代码")
-    @JSONField(name = "gp")
-    private Double gap;
+    /**
+     * 绩点
+     */
+    private String gpa;
 
-    @ApiModelProperty(value = "成绩")
-    @JSONField(name = "result")
-    private Double result;
-    @ApiModelProperty(value = "学期")
+    /**
+     * 成绩
+     */
+    @JSONField(name = "DYBFZCJ")
+    private String result;
+    /**
+     * 学期
+     */
+    @JSONField(name = "XNXQDM")
     private String term;
-
+    /**
+     * 课程类型
+     */
+    @JSONField(name = "KCLBMC")
     private String type;
+
+    /**
+     * 选修还是必修
+     */
+    private String option;
 }

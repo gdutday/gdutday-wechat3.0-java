@@ -1,12 +1,13 @@
 package com.gdutelc.service;
 
-import com.gdutelc.domain.DTO.ExamScoreDto;
-import com.gdutelc.domain.DTO.ExaminationDto;
-import com.gdutelc.domain.DTO.ScheduleInfoDto;
-import com.gdutelc.domain.DTO.UserInfoDto;
+import com.gdutelc.domain.DTO.*;
 import com.gdutelc.domain.VO.LibQrVO;
+import com.gdutelc.domain.query.BaseRequestDto;
+import com.gdutelc.domain.query.ScheduleInfoQueryDto;
+import okhttp3.OkHttpClient;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * @author Ymri
@@ -28,19 +29,11 @@ public interface GdutDayService {
     /**
      * 获得课程信息
      *
-     * @param cookies cookies
+     * @param queryDto QueryDaya
      * @return ArrayList<ScheduleInfoDto>
      */
-     ArrayList<ScheduleInfoDto> getScheduleInfo(String cookies,Integer userType);
+     Map<String,ArrayList<ScheduleInfoDto>> getScheduleInfo(ScheduleInfoQueryDto queryDto);
 
-
-    /**
-     * 获得考试信息
-     *
-     * @param cookies cookies
-     * @return ArrayList
-     */
-     ArrayList<ExamScoreDto> getExamScore(String cookies,Integer userType);
 
     /**
      * 获得图书馆二维码
@@ -54,7 +47,26 @@ public interface GdutDayService {
      * 获得学生考试安排，仅本科生使用,研究生课堂公布
      *
      * @param cookies cookies
+     * @param term
      * @return ArrayList
      */
-     ArrayList<ExaminationDto> getExaminationInfo(String cookies,Integer userType);
+     ArrayList<ExaminationDto> getExaminationInfo(String cookies, Integer userType, Integer term);
+
+    /**
+     * 获取登录验证码
+     * @param jSessionId jSessionId
+     * @return base64编码的验证码
+     */
+    VerCodeDto sendVerification(String jSessionId);
+
+    /**
+     * 获取学期
+     * @param baseRequestDto
+     * @return
+     */
+    String getTerm(BaseRequestDto baseRequestDto);
+
+    String getAdmissionDate();
+
+    boolean changeAdmissionDate(String date);
 }

@@ -16,6 +16,11 @@ public class GdutConfig {
     private String version;
     private String copyRightYear;
 
+    /**
+     * 开学时间
+     */
+    private String admissionDate;
+
     public String getName() {
         return name;
     }
@@ -38,5 +43,13 @@ public class GdutConfig {
 
     public void setCopyRightYear(String copyRightYear) {
         this.copyRightYear = copyRightYear;
+    }
+
+    public String getAdmissionDate() {
+        return admissionDate;
+    }
+
+    public void setAdmissionDate(String admissionDate) {
+        this.admissionDate = admissionDate;
     }
 }

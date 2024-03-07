@@ -1,15 +1,20 @@
 package com.gdutelc.framework.exception;
 
+import com.alibaba.fastjson.JSONException;
 import com.gdutelc.framework.common.HttpStatus;
 import com.gdutelc.framework.domain.AjaxResult;
 import com.gdutelc.utils.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.file.AccessDeniedException;
 
@@ -19,6 +24,8 @@ import java.nio.file.AccessDeniedException;
  * @since 2023/9/27 21:30
  * GlobalExceptionHandler
  */
+@ControllerAdvice(annotations = {RestController.class, Controller.class})
+@ResponseBody
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
@@ -53,6 +60,23 @@ public class GlobalExceptionHandler {
         Integer code = e.getCode();
         return StringUtils.isNotNull(code) ? AjaxResult.error(code, e.getMessage()) : AjaxResult.error(e.getMessage());
     }
+    /**
+     * json解析异常
+     */
+    @ExceptionHandler(JSONException.class)
+    public AjaxResult handleJSONException(JSONException e, HttpServletRequest request) {
+        log.error(e.getMessage(), e);
+        return AjaxResult.error(HttpStatus.f012,"json解析错误，可能是cookie错误或过期，请重新登录");
+    }
+
+    /**
+     * 参数异常
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public AjaxResult handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletRequest request) {
+        log.error(e.getMessage(), e);
+        return AjaxResult.error(HttpStatus.f002,"请求参数错误："+e.getBindingResult().getFieldError().getDefaultMessage());
+    }
 
     /**
      * 拦截未知的运行时异常
@@ -84,14 +108,14 @@ public class GlobalExceptionHandler {
         return AjaxResult.error(message);
     }
 
-    /**
-     * 自定义验证异常
-     */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Object handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        log.error(e.getMessage(), e);
-        String message = e.getBindingResult().getFieldError().getDefaultMessage();
-        return AjaxResult.error(message);
-    }
+//    /**
+//     * 自定义验证异常
+//     */
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public Object handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+//        log.error(e.getMessage(), e);
+//        String message = e.getBindingResult().getFieldError().getDefaultMessage();
+//        return AjaxResult.error(message);
+//    }
 
 }

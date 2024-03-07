@@ -1,6 +1,5 @@
 package com.gdutelc.domain.VO;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,11 +17,11 @@ import java.io.Serializable;
 @ToString
 public class LibQrVO implements Serializable {
 
-    @ApiModelProperty(value = "学号")
+    //"学号")
     private String stuId;
-    @ApiModelProperty(value = "QR宽度")
+    // "QR宽度")
     private Integer widthStr;
-    @ApiModelProperty(value = "QR高度")
+    // "QR高度")
     private Integer heightStr;
 
     public LibQrVO(String stuId, Integer widthStr, Integer heightStr) {

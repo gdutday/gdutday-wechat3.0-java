@@ -7,6 +7,6 @@ package com.gdutelc.common.constant;
  * LoginConstant 登录
  */
 public class LoginConstant {
-    public final static Integer JXFW_LOGIN = 1;
-    public final static Integer EHALL_LOGIN = 2;
+    public final static int JXFW_LOGIN = 1;
+    public final static int EHALL_LOGIN = 2;
 }

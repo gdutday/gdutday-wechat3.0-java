@@ -1,19 +1,16 @@
 package com.gdutelc.utils;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.gdutelc.framework.common.HttpStatus;
+import com.gdutelc.framework.exception.ServiceException;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-import org.apache.http.HttpEntity;
-import org.apache.http.util.EntityUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -23,9 +20,10 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.Security;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Hashtable;
-import java.util.Properties;
 
 /**
  * @author shan-liangguang
@@ -37,18 +35,19 @@ public class LiUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiUtils.class);
 
-    private static final String KEY_STR = "f345159c1f9a08a9";
+    private static final String KEY_STR = "f345159c1f9a08a9"; // f345159c1f9a08a9
 
     private static final String initVector = "as5d41gg09789ghy";
 
     private static final String CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
 
-    public static JSONObject entityToJsonObject(HttpEntity entity) {
-        try {
-            return JSON.parseObject(EntityUtils.toString(entity, "utf-8"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    private static final String ECB_ALGORITHM = "AES/ECB/PKCS7Padding";
+
+    private static final String SECRET = "rYnZ5jv7rLfsnd96";
+
+
+    static {
+        Security.addProvider(new BouncyCastleProvider());
     }
 
     /**
@@ -59,29 +58,42 @@ public class LiUtils {
      * @return 加密后的字符串，或者在出现异常时返回 null
      */
     public static String cbcEncrypt(String plaintext, String key) {
+        String iv = "Jisniwqjwqjwqjww"; // 长度固定为 aes.BlockSize ，16位
+        // 自动拓宽
+        String s = "J69IVxcXqvqNhvk1J69IVxcXqvqNhvk1J69IVxcXqvqNhvk1J69IVxcXqvqNhvk1" + plaintext;
         try {
-            // 长度固定为 AES 的块大小，16位
-            String iv = "Jisniwqjwqjwqjww";
-            // 自动拓宽
-            String s = "J69IVxcXqvqNhvk1J69IVxcXqvqNhvk1J69IVxcXqvqNhvk1J69IVxcXqvqNhvk1" + plaintext;
-            SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
-            IvParameterSpec ivParameterSpec = new IvParameterSpec(iv.getBytes(StandardCharsets.UTF_8));
-            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
-            byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(encryptedBytes);
+            return Encrypt(s, key, iv);
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e);
         }
     }
 
-    public static String getUrlFromProFile(String key) throws IOException {
-        Properties properties = new Properties();
-        Resource resource = new ClassPathResource("urls/usingUrl.properties");
-        properties.load(resource.getInputStream());
-        String url = (String) properties.get(key);
-        return url;
+    public static String Encrypt(String plainText, String key, String iv) throws Exception {
+        byte[] data = aesCBCEncrypt(plainText.getBytes(), key.getBytes(), iv.getBytes());
+        return Base64.getEncoder().encodeToString(data);
+    }
+
+    public static byte[] aesCBCEncrypt(byte[] plaintext, byte[] key, byte[] iv) throws Exception {
+        // AES
+        SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
+
+        // CBC 加密
+        byte[] encrypted = cipher.doFinal(plaintext);
+        return encrypted;
+    }
+
+    // PKCS7 填充
+    public static byte[] paddingPKCS7(byte[] plaintext, int blockSize) {
+        int paddingSize = blockSize - (plaintext.length % blockSize);
+        byte[] paddingText = new byte[paddingSize];
+        Arrays.fill(paddingText, (byte) paddingSize);
+        byte[] paddedData = new byte[plaintext.length + paddingSize];
+        System.arraycopy(plaintext, 0, paddedData, 0, plaintext.length);
+        System.arraycopy(paddingText, 0, paddedData, plaintext.length, paddingSize);
+        return paddedData;
     }
 
     public static String makeBase64(byte[] bytes) {
@@ -174,11 +186,58 @@ public class LiUtils {
             if (base64Str != null) {
                 return base64Str;
             }
-        } catch (WriterException | IOException
-                 | NullPointerException e) {
-            e.printStackTrace();
+        } catch (WriterException | IOException | NullPointerException e) {
+            throw new ServiceException("网络请求异常，请重试！", HttpStatus.f5001);
         }
         return "";
     }
+
+    /**
+     * AES加密ECB模式PKCS7Padding填充方式
+     *
+     * @param str 字符串
+     * @param key 密钥
+     * @return 加密字符串
+     * @throws Exception 异常信息
+     */
+    public static String aes256ECBPkcs7PaddingEncrypt(String str, String key) throws Exception {
+        Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+        byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
+        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(keyBytes, SECRET));
+        byte[] doFinal = cipher.doFinal(str.getBytes(StandardCharsets.UTF_8));
+        return new String(Base64.getEncoder().encode(doFinal));
+    }
+
+
+    public static String loginECBPkcs7PAddingDecrypt(String str) {
+        if (StringUtils.isEmpty(str)) {
+            throw new ServiceException("账号或密码错误！", 4005);
+        }
+        return LiUtils.aes256ECBPkcs7PaddingDecrypt(str, SECRET);
+    }
+
+    /**
+     * AES解密ECB模式PKCS7Padding填充方式
+     *
+     * @param str 字符串
+     * @param key 密钥
+     * @return 解密字符串
+     * @throws Exception 异常信息
+     */
+    public static String aes256ECBPkcs7PaddingDecrypt(String str, String key) {
+        try {
+            Cipher cipher = Cipher.getInstance(ECB_ALGORITHM);
+            byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
+            // 用来填充的东西
+            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(keyBytes, SECRET));
+            byte[] doFinal = cipher.doFinal(Base64.getDecoder().decode(str));
+            return new String(doFinal);
+        } catch (Exception e) {
+            throw new ServiceException("账号或密码错误！", 4005);
+        }
+
+
+    }
+
 
 }

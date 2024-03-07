@@ -1,13 +1,11 @@
 package com.gdutelc.domain;
 
-import io.swagger.annotations.ApiModelProperty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.validator.constraints.Range;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 
 /**
@@ -21,28 +19,26 @@ import java.io.Serializable;
 @ToString
 public class GdutDayWechatUser implements Serializable {
 
-    @ApiModelProperty(value = "用户名")
-    @NotEmpty(message = "账号不能为空")
+    //(value = "用户名")
+    @NotBlank(message = "账号不能为空")
     private String user;
 
-    @ApiModelProperty(value = "密码")
-    @NotEmpty(message = "密码不能为空")
+    //(value = "密码")
+    @NotBlank(message = "密码不能为空")
     private String password;
 
-    @ApiModelProperty(value = "验证码")
+    //(value = "验证码")
     private String code;
 
-    @ApiModelProperty(value = "用户身份类型，1-学生，2-研究生，3-老师")
-    @Max(value = 3, message = "登录类型错误")
-    @Min(value = 1, message = "登录类型错误")
+    //(value = "用户身份类型，1-学生，2-研究生，3-老师")
+    @Range(min=1,max=3,message = "用户类型错误！")
     private Integer userType;
 
-    @ApiModelProperty(value = "用户登录类型，1-jxfw登录(仅限制本科生)，2-hell登录")
-    @Max(value = 2, message = "登录类型错误")
-    @Min(value = 1, message = "登录类型错误")
+    //(value = "用户登录类型，1-jxfw登录(仅限制本科生)，2-hell登录")
+    @Range(min=1,max=2,message = "登录类型异常！")
     private Integer loginType;
 
-    @ApiModelProperty(value = "jSessionid, 兼容V2")
+    //(value = "jSessionid, 兼容V2")
     private String jSessionId;
 
 

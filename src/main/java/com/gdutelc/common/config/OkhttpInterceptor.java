@@ -6,8 +6,6 @@ import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
-import java.io.IOException;
 
 /**
  * @author Ymri
@@ -17,7 +15,7 @@ import java.io.IOException;
  */
 class OkhttpInterceptor implements Interceptor {
 
-    private int maxRentry;// 最大重试次数
+    private final int  maxRentry;// 最大重试次数
 
     public OkhttpInterceptor(int maxRentry) {
         this.maxRentry = maxRentry;
@@ -25,9 +23,9 @@ class OkhttpInterceptor implements Interceptor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OkhttpInterceptor.class);
 
-    @NotNull
+
     @Override
-    public Response intercept(@NotNull Chain chain) throws IOException {
+    public Response intercept(Chain chain) {
         /* 递归 4次下发请求，如果仍然失败 则返回 null ,但是 intercept must not return null.
          * 返回 null 会报 IllegalStateException 异常
          * */
@@ -38,14 +36,14 @@ class OkhttpInterceptor implements Interceptor {
         Request request = chain.request();
         Response response = null;
         try {
-            LOGGER.info("第" + (retryCent + 1) + "次执行下发NEF请求.");
+             LOGGER.debug("第" + (retryCent + 1) + "次执行下发NEF请求.");
             response = chain.proceed(request);
         } catch (Exception e) {
             if (maxRentry > retryCent) {
+                LOGGER.error("请求 "+request.url()+" 出现异常："+e.getMessage());
                 return retry(chain, retryCent + 1);
             }
-        } finally {
-            return response;
         }
+        return response;
     }
 }

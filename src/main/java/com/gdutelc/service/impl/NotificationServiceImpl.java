@@ -18,6 +18,7 @@ public class NotificationServiceImpl implements NotificationService {
      */
     @Override
     public HiGdutDays getHiMessage() {
+        int arr[][] = new int[10][10];
         return new HiGdutDays("GdutDaysV3");
     }
 }
