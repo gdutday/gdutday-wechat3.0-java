@@ -82,7 +82,7 @@ docker-build-and-push:
   image: docker:stable
   stage: build-phase-2
   tags:
-    - Docker
+    - docker
   services:
     - name: docker:stable
   script:
@@ -126,6 +126,25 @@ release-new-version:
   allow_failure: true
   only:
     - main
+
+push-packages:
+  image: curlimages/curl:latest
+  stage: build-phase-2
+  tags:
+    - dev
+  script:
+    - echo "================================= LOAD ENV ================================="
+    - env
+    - echo "COMMIT_TIME=${COMMIT_TIME}"
+    - echo "=================== PUBLISH JAR FILE TO Package Registry ==================="
+    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/2/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
+  allow_failure: true
+  artifacts:
+    reports:
+      dotenv: build.env
+  only:
+    - main
+
 
 image-sign:
   image: ubuntu:22.04
