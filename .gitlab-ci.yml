@@ -41,7 +41,6 @@ docker-build-and-push:
   stage: build-phase-2
   tags:
     - kaniko
-  entrypoint: [""]
   script:
     - echo "================================= LOAD ENV ================================="
     - env
