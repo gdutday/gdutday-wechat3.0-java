@@ -1,4 +1,4 @@
-image: docker:stable
+image: ubuntu:22.04
 
 stages:
   - build-phase-1
@@ -17,6 +17,21 @@ maven-build:
   stage: build-phase-1
   tags:
     - maven
+  before_script:
+    - echo "=========================== CHANGE MAVEN MIRROR ============================"
+    - echo '<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+            <localRepository>/cache/.m2</localRepository>
+            <mirrors>
+              <mirror>
+                <id>nexus-aliyun</id>
+                <mirrorOf>*</mirrorOf>
+                <name>Nexus aliyun</name>
+                <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+              </mirror>
+            </mirrors>
+            </settings>' > $HOME/.m2/settings.xml
   script:
     - echo "========================== GENERATE VERSION TAGS ==========================="
     - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
@@ -36,25 +51,56 @@ maven-build:
     - main
     - dev
 
+#docker-build-and-push:
+#  image: registry.gdut.edu.cn/gcr.io/kaniko-project/executor:latest
+#  stage: build-phase-2
+#  tags:
+#    - kaniko
+#  script:
+#    - echo "================================= LOAD ENV ================================="
+#    - env
+#    - echo "COMMIT_TIME=${COMMIT_TIME}"
+#    - echo "=========================== BUILD IMAGE AND PUSH ==========================="
+#    - mkdir -p /kaniko/.docker
+#    - echo "{\"auths\":{\"${HARBORHOST}\":{\"auth\":\"$(printf "%s:%s" "${USERNAME}" "${PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+#    - /kaniko/executor
+#    - >-
+#      /kaniko/executor
+#      --context "${CI_PROJECT_DIR}"
+#      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+#      --destination "${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-${COMMIT_TIME}"
+#      --destination "${HARBORHOST}/gdutday/gdutday:latest"
+#  artifacts:
+#    reports:
+#      dotenv: build.env
+#    expire_in: 30 min
+#  only:
+#    - dev
+
 docker-build-and-push:
-  image: registry.gdut.edu.cn/gcr.io/kaniko-project/executor:latest
+  image: docker:stable
   stage: build-phase-2
   tags:
-    - kaniko
+    - Docker
+  services:
+    - name: docker:stable
   script:
     - echo "================================= LOAD ENV ================================="
     - env
     - echo "COMMIT_TIME=${COMMIT_TIME}"
-    - echo "=========================== BUILD IMAGE AND PUSH ==========================="
-    - mkdir -p /kaniko/.docker
-    - echo "{\"auths\":{\"${HARBORHOST}\":{\"auth\":\"$(printf "%s:%s" "${USERNAME}" "${PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor
-    - >-
-      /kaniko/executor
-      --context "${CI_PROJECT_DIR}"
-      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination "${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-${COMMIT_TIME}"
-      --destination "${HARBORHOST}/gdutday/gdutday:latest"
+    - echo "============================= LOGIN TO HARBOR =============================="
+    - docker login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
+    - echo "=========================== BUILD DOCKER IMAGES ============================"
+    - docker build -t ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME) .
+    - echo "========================== TAG IMAGES WITH LATEST =========================="
+    - docker tag ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME) ${HARBORHOST}/gdutday/gdutday:latest
+    - echo "========================== PUSH IMAGES TO HARBOR ==========================="
+    - docker push ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    - docker push ${HARBORHOST}/gdutday/gdutday:latest
+    - echo "============================= CLEAN UP MIRRORS ============================="
+    - docker rmi ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    - echo "============================ EXPORT IMAGE TAGS ============================="
+    - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
   artifacts:
     reports:
       dotenv: build.env
