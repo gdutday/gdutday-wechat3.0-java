@@ -131,14 +131,30 @@ image-sign:
   stage: build-phase-3
   tags:
     - dev
+  before_script:
+    - echo "============================ CHANGE APT MIRROR ============================="
+    - cat <<'EOF' > /etc/apt/sources.list
+      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
+      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
+      # 预发布软件源，不建议启用
+      # deb http://mirrors.gdut.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
+      # deb-src http://mirrors.gdut.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
+      EOF
+    - apt update
+    - echo "=============================== INSTALL WGET ==============================="
+    - apt install wget -y
   script:
     - echo "================================= LOAD ENV ================================="
     - env
     - echo "COMMIT_TIME=${COMMIT_TIME}"
     - echo "============================== INSTALL COSIGN =============================="
-    - apt update
-    - apt install wget -y
-    - wget "https://az1.minio.gdutnic.com/gdutnic/public/cosign_1.6.0_amd64.deb"
+    - wget --no-check-certificate "https://az1.minio.gdutnic.com/gdutnic/public/cosign_1.6.0_amd64.deb"
     - dpkg -i cosign_1.6.0_amd64.deb
     - mv /usr/local/bin/cosign-linux-amd64 /usr/local/bin/cosign
     - echo "=============================== KEY GENERATE ==============================="
@@ -166,6 +182,21 @@ docker-deploy:
   tags:
     - dev
   before_script:
+    - echo "============================ CHANGE APT MIRROR ============================="
+    - cat <<'EOF' > /etc/apt/sources.list
+      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
+      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
+      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
+      # 预发布软件源，不建议启用
+      # deb http://mirrors.gdut.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
+      # deb-src http://mirrors.gdut.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
+      EOF
+    - apt update
     - echo "========================== DOWNLOAD OPENSSH CLIENT ========================="
     ##
     ## Install ssh-agent if not already installed, it is required by Docker.
@@ -177,13 +208,6 @@ docker-deploy:
     ## Run ssh-agent (inside the build environment)
     ##
     - eval $(ssh-agent -s)
-    - echo "============================== ADD KNOWN HOSTS ============================="
-    ##
-    ## Assuming you created the SSH_KNOWN_HOSTS variable, uncomment the
-    ## following two lines.
-    ##
-    - cp "${SSH_KNOWN_HOSTS}" ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
     - echo "======================= CHANGE PERMISSION OF SSH KEY ======================="
     ##
     ## Give the right permissions, otherwise ssh-add will refuse to add files
@@ -197,6 +221,20 @@ docker-deploy:
     ##
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
+    - echo "============================== ADD KNOWN HOSTS ============================="
+    ##
+    ## Assuming you created the SSH_KNOWN_HOSTS variable, uncomment the
+    ## following two lines.
+    ##
+    #- cp "${SSH_KNOWN_HOSTS}" ~/.ssh/known_hosts
+    #- chmod 644 ~/.ssh/known_hosts
+    ##
+    ## Alternatively, use ssh-keyscan to scan the keys of your private server.
+    ## Replace example.com with your private server's domain name. Repeat that
+    ## command if you have more than one server to connect to.
+    ##
+    - ssh-keyscan ${SERVER_HOST} >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
   script:
     - echo "============================= PULL LATEST IMAGE ============================"
     - ssh ${SERVER_USERNAME}@${SERVER_HOST} 'docker pull ${HARBORHOST}/gdutday/gdutday:latest'
