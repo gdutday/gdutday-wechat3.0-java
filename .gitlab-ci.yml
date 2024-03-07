@@ -118,8 +118,8 @@ release-new-version:
     - echo "================================= LOAD ENV ================================="
     - env
     - echo "COMMIT_TIME=${COMMIT_TIME}"
-    - echo "=================== PUBLISH JAR FILE TO Package Registry ==================="
-    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/2/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
+    #- echo "=================== PUBLISH JAR FILE TO Package Registry ==================="
+    #- curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/2/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
   release:
     tag_name: "${BIG_VERSION}-${COMMIT_TIME}"
     description: "This is a release of version ${BIG_VERSION}-${COMMIT_TIME}."
