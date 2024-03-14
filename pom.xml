@@ -22,26 +22,6 @@
         <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>gitlab-maven</id>
-            <!--suppress UnresolvedMavenProperty -->
-            <url>https://git.gdutelc.com/projects/${env.CI_PROJECT_ID}/packages/maven</url>
-        </repository>
-    </repositories>
-    <distributionManagement>
-        <repository>
-            <id>gitlab-maven</id>
-            <!--suppress UnresolvedMavenProperty -->
-            <url>https://git.gdutelc.com/projects/${env.CI_PROJECT_ID}/packages/maven</url>
-        </repository>
-        <snapshotRepository>
-            <id>gitlab-maven</id>
-            <!--suppress UnresolvedMavenProperty -->
-            <url>https://git.gdutelc.com/projects/${env.CI_PROJECT_ID}/packages/maven</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <dependencies>
 
         <!--        默认版本yaml出现漏洞，更新到最新版本-->
