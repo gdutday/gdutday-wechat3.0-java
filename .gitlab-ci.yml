@@ -27,7 +27,7 @@ sonarqube-check:
     paths:
       - .sonar/cache
   script:
-    - mvn verify sonar:sonar
+    - mvn verify sonar:sonar -DskipTests -Dmaven.repo.local=cache
   allow_failure: true
   only:
     - dev
