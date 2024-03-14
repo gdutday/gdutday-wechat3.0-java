@@ -90,9 +90,31 @@ maven-build:main:
   stage: build-phase-1
   tags:
     - maven
+  before_script:
+    - echo "=========================== CHANGE MAVEN MIRROR ============================"
+    - echo '<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+      <localRepository>/cache/.m2</localRepository>
+      <mirrors>
+      <mirror>
+      <id>nexus-aliyun</id>
+      <mirrorOf>*</mirrorOf>
+      <name>Nexus aliyun</name>
+      <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+      </mirror>
+      </mirrors>
+      </settings>' > $HOME/.m2/settings.xml
   script:
+    - echo "========================== GENERATE VERSION TAGS ==========================="
+    - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
+    - echo "The commit timestamp is $(echo $COMMIT_TIME | sed 's/[-T:.]//g')"
+    - echo "=========================== BUILD MAVEN PROJECT ============================"
+    - mvn package -Dmaven.test.sktip=true -DskipTests -Dmaven.repo.local=cache
+    - echo "=========================== EXPORT VERSION TAGS ============================"
+    - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
     - echo "========================== PUBLISH MAVEN PACKAGE ==========================="
-    - mvn deploy -s ci_settings.xml
+    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/${env.CI_PROJECT_ID}/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
   artifacts:
     reports:
       dotenv: build.env
