@@ -19,6 +19,21 @@ sonarqube-check:
   image: maven:3-eclipse-temurin-17
   tags:
     - maven
+  before_script:
+    - echo "=========================== CHANGE MAVEN MIRROR ============================"
+    - echo '<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+            <localRepository>/cache/.m2</localRepository>
+            <mirrors>
+              <mirror>
+                <id>nexus-aliyun</id>
+                <mirrorOf>*</mirrorOf>
+                <name>Nexus aliyun</name>
+                <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+              </mirror>
+            </mirrors>
+            </settings>' > $HOME/.m2/settings.xml
   variables:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
     GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
