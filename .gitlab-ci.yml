@@ -1,6 +1,7 @@
 image: ubuntu:22.04
 
 stages:
+  - check-phase-1
   - build-phase-1
   - build-phase-2
   - build-phase-3
@@ -13,7 +14,40 @@ cache:
 variables:
   BIG_VERSION: v4.0
 
-maven-build:
+sonarqube-check:
+  stage: check-phase-1
+  image: maven:3-eclipse-temurin-17
+  tags:
+    - maven
+  before_script:
+    - echo "=========================== CHANGE MAVEN MIRROR ============================"
+    - echo '<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+            <localRepository>/cache/.m2</localRepository>
+            <mirrors>
+              <mirror>
+                <id>nexus-aliyun</id>
+                <mirrorOf>*</mirrorOf>
+                <name>Nexus aliyun</name>
+                <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+              </mirror>
+            </mirrors>
+            </settings>' > $HOME/.m2/settings.xml
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  script:
+    - mvn verify sonar:sonar -DskipTests -Dmaven.repo.local=cache
+  allow_failure: true
+  only:
+    - dev
+
+maven-build:dev:
   image: maven:3.6-openjdk-17
   stage: build-phase-1
   tags:
@@ -49,8 +83,21 @@ maven-build:
     reports:
       dotenv: build.env
   only:
-    - main
     - dev
+
+maven-build:main:
+  image: maven:3.6-openjdk-17
+  stage: build-phase-1
+  tags:
+    - maven
+  script:
+    - echo "========================== PUBLISH MAVEN PACKAGE ==========================="
+    - mvn deploy -s ci_settings.xml
+  artifacts:
+    reports:
+      dotenv: build.env
+  only:
+    - main
 
 #docker-build-and-push:
 #  image: registry.gdut.edu.cn/gcr.io/kaniko-project/executor:latest
@@ -82,7 +129,7 @@ docker-build-and-push:
   image: docker:stable
   stage: build-phase-2
   tags:
-    - docker
+    - Docker
   services:
     - name: docker:stable
   script:
@@ -127,23 +174,23 @@ release-new-version:
   only:
     - main
 
-push-packages:
-  image: curlimages/curl:latest
-  stage: build-phase-2
-  tags:
-    - dev
-  script:
-    - echo "================================= LOAD ENV ================================="
-    - env
-    - echo "COMMIT_TIME=${COMMIT_TIME}"
-    - echo "=================== PUBLISH JAR FILE TO Package Registry ==================="
-    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/2/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
-  allow_failure: true
-  artifacts:
-    reports:
-      dotenv: build.env
-  only:
-    - main
+#push-packages:
+#  image: curlimages/curl:latest
+#  stage: build-phase-2
+#  tags:
+#    - dev
+#  script:
+#    - echo "================================= LOAD ENV ================================="
+#    - env
+#    - echo "COMMIT_TIME=${COMMIT_TIME}"
+#    - echo "=================== PUBLISH JAR FILE TO Package Registry ==================="
+#    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/1/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
+#  allow_failure: true
+#  artifacts:
+#    reports:
+#      dotenv: build.env
+#  only:
+#    - main
 
 
 image-sign:

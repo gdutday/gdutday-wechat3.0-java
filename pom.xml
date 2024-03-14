@@ -17,7 +17,31 @@
         <java.version>17</java.version>
         <swagger.version>3.0.0</swagger.version>
         <snakeyaml.version>2.2</snakeyaml.version>
+        <sonar.projectKey>gdutdays_gdutday_4061ee04-a2bb-415d-b992-dd9e5b315cd1</sonar.projectKey>
+        <sonar.projectName>gdutday</sonar.projectName>
+        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>gitlab-maven</id>
+            <!--suppress UnresolvedMavenProperty -->
+            <url>https://git.gdutelc.com/projects/${env.CI_PROJECT_ID}/packages/maven</url>
+        </repository>
+    </repositories>
+    <distributionManagement>
+        <repository>
+            <id>gitlab-maven</id>
+            <!--suppress UnresolvedMavenProperty -->
+            <url>https://git.gdutelc.com/projects/${env.CI_PROJECT_ID}/packages/maven</url>
+        </repository>
+        <snapshotRepository>
+            <id>gitlab-maven</id>
+            <!--suppress UnresolvedMavenProperty -->
+            <url>https://git.gdutelc.com/projects/${env.CI_PROJECT_ID}/packages/maven</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <dependencies>
 
         <!--        默认版本yaml出现漏洞，更新到最新版本-->
