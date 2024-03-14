@@ -1,6 +1,7 @@
 image: ubuntu:22.04
 
 stages:
+  - check-phase-1
   - build-phase-1
   - build-phase-2
   - build-phase-3
@@ -13,7 +14,23 @@ cache:
 variables:
   BIG_VERSION: v4.0
 
-maven-build:
+sonarqube-check:
+  stage: check-phase-1
+  image: maven:3-eclipse-temurin-17
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  script:
+    - mvn verify sonar:sonar
+  allow_failure: true
+  only:
+    - dev
+
+maven-build:dev:
   image: maven:3.6-openjdk-17
   stage: build-phase-1
   tags:
@@ -49,8 +66,21 @@ maven-build:
     reports:
       dotenv: build.env
   only:
-    - main
     - dev
+
+maven-build:main:
+  image: maven:3.6-openjdk-17
+  stage: build-phase-1
+  tags:
+    - maven
+  script:
+    - echo "========================== PUBLISH MAVEN PACKAGE ==========================="
+    - mvn deploy -s ci_settings.xml
+  artifacts:
+    reports:
+      dotenv: build.env
+  only:
+    - main
 
 #docker-build-and-push:
 #  image: registry.gdut.edu.cn/gcr.io/kaniko-project/executor:latest
@@ -118,14 +148,33 @@ release-new-version:
     - echo "================================= LOAD ENV ================================="
     - env
     - echo "COMMIT_TIME=${COMMIT_TIME}"
-    - echo "=================== PUBLISH JAR FILE TO Package Registry ==================="
-    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/2/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
+    #- echo "=================== PUBLISH JAR FILE TO Package Registry ==================="
+    #- curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/2/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
   release:
     tag_name: "${BIG_VERSION}-${COMMIT_TIME}"
     description: "This is a release of version ${BIG_VERSION}-${COMMIT_TIME}."
   allow_failure: true
   only:
     - main
+
+#push-packages:
+#  image: curlimages/curl:latest
+#  stage: build-phase-2
+#  tags:
+#    - dev
+#  script:
+#    - echo "================================= LOAD ENV ================================="
+#    - env
+#    - echo "COMMIT_TIME=${COMMIT_TIME}"
+#    - echo "=================== PUBLISH JAR FILE TO Package Registry ==================="
+#    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/1/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
+#  allow_failure: true
+#  artifacts:
+#    reports:
+#      dotenv: build.env
+#  only:
+#    - main
+
 
 image-sign:
   image: ubuntu:22.04
