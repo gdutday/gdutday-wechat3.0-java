@@ -140,6 +140,8 @@ public class ExamScoreServiceImpl implements ExamScoreService {
         JSONObject jsonObject = datas.getJSONObject("xscjcx");
         JSONArray rows = jsonObject.getJSONArray("rows");
         List<ExamScoreDto> arrayList = JSONObject.parseArray(rows.toString(), ExamScoreDto.class);
+        // stream 流过滤Result字段为空的
+        arrayList.removeIf(e -> StringUtils.isEmpty(e.getResult()));
         // 筛选过滤 兼容本科生写法..
         Map<String, ArrayList<ExamScoreDto>> retMap = new HashMap<>();
         arrayList.forEach(e -> {
