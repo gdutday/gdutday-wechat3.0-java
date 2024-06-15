@@ -1,4 +1,4 @@
-image: ubuntu:22.04
+image: registry.gdut.edu.cn/docker/library/ubuntu:22.04
 
 stages:
   - check-phase-1
@@ -16,7 +16,7 @@ variables:
 
 sonarqube-check:
   stage: check-phase-1
-  image: maven:3-eclipse-temurin-17
+  image: registry.gdut.edu.cn/docker/library/maven:3-eclipse-temurin-17
   tags:
     - maven
   before_script:
@@ -48,7 +48,7 @@ sonarqube-check:
     - dev
 
 maven-build:dev:
-  image: maven:3.6-openjdk-17
+  image: registry.gdut.edu.cn/docker/library/maven:3.6-openjdk-17
   stage: build-phase-1
   tags:
     - maven
@@ -86,7 +86,7 @@ maven-build:dev:
     - dev
 
 maven-build:main:
-  image: maven:3.6-openjdk-17
+  image: registry.gdut.edu.cn/docker/library/maven:3.6-openjdk-17
   stage: build-phase-1
   tags:
     - maven
@@ -148,7 +148,7 @@ maven-build:main:
 #    - dev
 
 docker-build-and-push:
-  image: docker:stable
+  image: registry.gdut.edu.cn/docker/library/docker:stable
   stage: build-phase-2
   tags:
     - Docker
@@ -216,7 +216,7 @@ release-new-version:
 
 
 image-sign:
-  image: ubuntu:22.04
+  image: registry.gdut.edu.cn/docker/library/ubuntu:22.04
   stage: build-phase-3
   tags:
     - dev
