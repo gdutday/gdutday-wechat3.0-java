@@ -17,7 +17,11 @@
         <java.version>17</java.version>
         <swagger.version>3.0.0</swagger.version>
         <snakeyaml.version>2.2</snakeyaml.version>
+        <sonar.projectKey>gdutdays_gdutday_4061ee04-a2bb-415d-b992-dd9e5b315cd1</sonar.projectKey>
+        <sonar.projectName>gdutday</sonar.projectName>
+        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
     </properties>
+
     <dependencies>
 
         <!--        默认版本yaml出现漏洞，更新到最新版本-->

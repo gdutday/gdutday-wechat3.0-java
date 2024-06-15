@@ -1,6 +1,7 @@
 package com.gdutelc.domain.DTO;
 
 import com.alibaba.fastjson2.annotation.JSONField;
+
 import lombok.*;
 
 import java.io.Serializable;
@@ -48,4 +49,5 @@ public class ScheduleInfoDto implements Serializable {
     private String courseDescription;
 
 
+  
 }
