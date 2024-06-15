@@ -312,19 +312,31 @@ docker-deploy:
     ## command if you have more than one server to connect to.
     ##
     - ssh-keyscan ${SERVER_HOST} >> ~/.ssh/known_hosts
+    - ssh-keyscan -p 1922 ${BASTION_HOST} >> ~/.ssh/known_hosts || true
+    - ssh-keyscan -p 2322 ${BASTION_HOST} >> ~/.ssh/known_hosts || true
     - chmod 644 ~/.ssh/known_hosts
   script:
     - echo "============================= PULL LATEST IMAGE ============================"
     - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker pull ${HARBORHOST}/gdutday/gdutday:latest"
+    - ssh -p 1922 ${SERVER_USERNAME}@${BASTION_HOST} "docker pull ${HARBORHOST}/gdutday/gdutday:latest" || true
+    - ssh -p 2322 ${SERVER_USERNAME}@${BASTION_HOST} "docker pull ${HARBORHOST}/gdutday/gdutday:latest" || true
     - echo "============================ GET OLD IMAGE INFO ============================"
     - export OLD_IMAGE_INFO=$(ssh $SERVER_USERNAME@$SERVER_HOST "docker inspect --format='{{.Image}}' gdutday4")
     - echo "============================ STOP OLD CONTAINER ============================"
     - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker stop gdutday4" || true
+    - ssh -p 1922 ${SERVER_USERNAME}@${BASTION_HOST} "docker stop gdutday4" || true
+    - ssh -p 2322 ${SERVER_USERNAME}@${BASTION_HOST} "docker stop gdutday4" || true
     - echo "=========================== REMOVE OLD CONTAINER ==========================="
     - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker rm gdutday4" || true
+    - ssh -p 1922 ${SERVER_USERNAME}@${BASTION_HOST} "docker rm gdutday4" || true
+    - ssh -p 2322 ${SERVER_USERNAME}@${BASTION_HOST} "docker rm gdutday4" || true
     - echo "============================= REMOVE OLD IMAGE ============================="
     - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker rmi ${OLD_IMAGE_INFO}" || true
+    - ssh -p 1922 ${SERVER_USERNAME}@${BASTION_HOST} "docker rmi ${OLD_IMAGE_INFO}" || true
+    - ssh -p 2322 ${SERVER_USERNAME}@${BASTION_HOST} "docker rmi ${OLD_IMAGE_INFO}" || true
     - echo "=========================== DEPLOY NEW CONTAINER ==========================="
     - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker run -d  -p 1888:8080 --name gdutday4 --restart=always ${HARBORHOST}/gdutday/gdutday:latest"
+    - ssh -p 1922 ${SERVER_USERNAME}@${BASTION_HOST} "docker run -d  -p 1888:8080 --name gdutday4 --restart=always ${HARBORHOST}/gdutday/gdutday:latest" || true
+    - ssh -p 2322 ${SERVER_USERNAME}@${BASTION_HOST} "docker run -d  -p 1888:8080 --name gdutday4 --restart=always ${HARBORHOST}/gdutday/gdutday:latest" || true
   only:
     - dev
