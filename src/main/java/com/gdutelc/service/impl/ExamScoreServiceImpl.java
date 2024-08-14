@@ -73,7 +73,41 @@ public class ExamScoreServiceImpl implements ExamScoreService {
         paramMap.put("page", "1");
         paramMap.put("rows", "200");
         paramMap.put("order", "asc");
+        JSONArray rows = getRows(okHttpClient,url,paramMap,cookies);
+        HashMap<String, ArrayList<ExamScoreDto>> result = new HashMap<>();
+        for (int i = 0; i < rows.size(); i++) {
+            JSONObject jsonObject = rows.getJSONObject(i);
+            String term = jsonObject.getString("xnxqmc");
+            if (!result.containsKey(term)) {
+                // 存在中文汉字...
+                result.put(term, new ArrayList<>());
+            }
+            ExamScoreDto examScoreDto = new ExamScoreDto();
+            examScoreDto.setTerm(term);
+            examScoreDto.setGpa(jsonObject.getString("cjjd"));
+            examScoreDto.setResult(jsonObject.getString("zcj"));
+            examScoreDto.setCredit(jsonObject.getString("xf"));
+            examScoreDto.setType(jsonObject.getString("kcdlmc"));
+            examScoreDto.setCourseType(jsonObject.getString("kcflmc"));
+            examScoreDto.setOption(jsonObject.getString("xdfsmc"));
+            examScoreDto.setCourseName(jsonObject.getString("kcmc"));
+            if(examScoreDto.getCourseName().equals("劳动教育")){
+                //20240814 修复劳动教育成绩显示问题，问题原因xnxqdm为空时，劳动教育不显示成绩，是教务处的问题
+                //但我们还是抹平教务处的问题。。。
+                paramMap.put("xnxqdm", "202302");
+                JSONArray rows1 = getRows(okHttpClient, url, paramMap, cookies);
+                for(int j = 0;j<rows1.size();j++){
+                    JSONObject object = rows1.getJSONObject(j);
+                    examScoreDto.setGpa(object.getString("cjjd"));
+                    examScoreDto.setResult(object.getString("zcj"));
+                }
+            }
+            result.get(term).add(examScoreDto);
+        }
+        return result;
+    }
 
+    public JSONArray getRows(OkHttpClient okHttpClient,String url,Map<String,String> paramMap,String cookies){
         String content = null;
         try (Response response = this.okHttpUtils.postByFormUrl(okHttpClient, url, JsoupUtils.map2PostUrlCodeString(paramMap), UrlConstant.UNDER_REFER, cookies)) {
             assert response.body() != null;
@@ -92,26 +126,7 @@ public class ExamScoreServiceImpl implements ExamScoreService {
             throw new ServiceException("身份信息过期，请重新登录！", HttpStatus.f007);
         }
         JSONArray rows = object.getJSONArray("rows");
-        HashMap<String, ArrayList<ExamScoreDto>> result = new HashMap<>();
-        for (int i = 0; i < rows.size(); i++) {
-            JSONObject jsonObject = rows.getJSONObject(i);
-            String term = jsonObject.getString("xnxqmc");
-            if (!result.containsKey(term)) {
-                // 存在中文汉字...
-                result.put(term, new ArrayList<>());
-            }
-            ExamScoreDto examScoreDto = new ExamScoreDto();
-            examScoreDto.setTerm(term);
-            examScoreDto.setGpa(jsonObject.getString("cjjd"));
-            examScoreDto.setResult(jsonObject.getString("zcj"));
-            examScoreDto.setCredit(jsonObject.getString("xf"));
-            examScoreDto.setType(jsonObject.getString("kcdlmc"));
-            examScoreDto.setCourseType(jsonObject.getString("kcflmc"));
-            examScoreDto.setOption(jsonObject.getString("xdfsmc"));
-            examScoreDto.setCourseName(jsonObject.getString("kcmc"));
-            result.get(term).add(examScoreDto);
-        }
-        return result;
+        return rows;
     }
 
     /**
