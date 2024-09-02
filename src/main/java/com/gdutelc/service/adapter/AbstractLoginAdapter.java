@@ -137,6 +137,8 @@ public abstract class AbstractLoginAdapter implements LoginService {
             } else if (userType == GRADUATE) {
                 // 研究生登录，传入研究生登录地址
                 this.postLoginByUrl(UrlConstant.GRADUATE_EHALL_LOGIN, myokHttpClient);
+                // 认证成绩系统
+                this.postLoginByUrl(UrlConstant.GRADUATE_EHALL_SCORE_LOGIN, myokHttpClient);
                 cookieStr = OkHttpUtils.getCookieRemoveShortWEU(cookieJar.cookies);
                 return new LoginDto(cookieStr, userType);
             } else if (userType == TEACHER) {
