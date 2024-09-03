@@ -263,24 +263,25 @@ image-sign:
 
 docker-deploy:
   stage: build-phase-4
+  image: registry.gdut.edu.cn/docker/kroniak/ssh-client:latest
   tags:
     - dev
   before_script:
-    - echo "============================ CHANGE APT MIRROR ============================="
-    - echo 'deb http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
-      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
-      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
-      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
-      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
-      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
-      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
-      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse' > /etc/apt/sources.list
-    - echo "========================== DOWNLOAD OPENSSH CLIENT ========================="
+    #- echo "============================ CHANGE APT MIRROR ============================="
+    #- echo 'deb http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
+    #  deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
+    #  deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+    #  deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+    #  deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+    #  deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+    #  deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
+    #  deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse' > /etc/apt/sources.list
+    #- echo "========================== DOWNLOAD OPENSSH CLIENT ========================="
     ##
     ## Install ssh-agent if not already installed, it is required by Docker.
     ## (change apt-get to yum if you use an RPM-based image)
     ##
-    - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+    #- 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
     - echo "=============================== RUN SSH AGENT =============================="
     ##
     ## Run ssh-agent (inside the build environment)
