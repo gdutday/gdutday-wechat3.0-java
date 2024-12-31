@@ -42,8 +42,13 @@ sonarqube-check:
     paths:
       - .sonar/cache
   script:
-    - mvn verify sonar:sonar -DskipTests -Dmaven.repo.local=cache
+    - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -DskipTests -Dmaven.repo.local=cache
   allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == 'master'
+    - if: $CI_COMMIT_BRANCH == 'main'
+    - if: $CI_COMMIT_BRANCH == 'develop'
   only:
     - dev
 
@@ -114,7 +119,7 @@ maven-build:main:
     - echo "=========================== EXPORT VERSION TAGS ============================"
     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
     - echo "========================== PUBLISH MAVEN PACKAGE ==========================="
-    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/${CI_PROJECT_ID}/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
+    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/${CI_PROJECT_ID}/packages/generic/gdutdays/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
   artifacts:
     reports:
       dotenv: build.env
@@ -138,8 +143,8 @@ maven-build:main:
 #      /kaniko/executor
 #      --context "${CI_PROJECT_DIR}"
 #      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-#      --destination "${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-${COMMIT_TIME}"
-#      --destination "${HARBORHOST}/gdutday/gdutday:latest"
+#      --destination "${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-${COMMIT_TIME}"
+#      --destination "${HARBORHOST}/gdutdays/gdutdays:latest"
 #  artifacts:
 #    reports:
 #      dotenv: build.env
@@ -161,14 +166,14 @@ docker-build-and-push:
     - echo "============================= LOGIN TO HARBOR =============================="
     - docker login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
     - echo "=========================== BUILD DOCKER IMAGES ============================"
-    - docker build -t ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME) .
+    - docker build -t ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME) .
     - echo "========================== TAG IMAGES WITH LATEST =========================="
-    - docker tag ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME) ${HARBORHOST}/gdutday/gdutday:latest
+    - docker tag ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME) ${HARBORHOST}/gdutdays/gdutdays:latest
     - echo "========================== PUSH IMAGES TO HARBOR ==========================="
-    - docker push ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME)
-    - docker push ${HARBORHOST}/gdutday/gdutday:latest
+    - docker push ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    - docker push ${HARBORHOST}/gdutdays/gdutdays:latest
     - echo "============================= CLEAN UP MIRRORS ============================="
-    - docker rmi ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    - docker rmi ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME)
     - echo "============================ EXPORT IMAGE TAGS ============================="
     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
   artifacts:
@@ -188,7 +193,7 @@ release-new-version:
     - env
     - echo "COMMIT_TIME=${COMMIT_TIME}"
     #- echo "=================== PUBLISH JAR FILE TO Package Registry ==================="
-    #- curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/2/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
+    #- curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutnic.com/api/v4/projects/2/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutdays.jar"
   release:
     tag_name: "${BIG_VERSION}-${COMMIT_TIME}"
     description: "This is a release of version ${BIG_VERSION}-${COMMIT_TIME}."
@@ -206,7 +211,7 @@ release-new-version:
 #    - env
 #    - echo "COMMIT_TIME=${COMMIT_TIME}"
 #    - echo "=================== PUBLISH JAR FILE TO Package Registry ==================="
-#    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/1/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
+#    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutnic.com/api/v4/projects/1/packages/generic/gdutdays/${BIG_VERSION}-${COMMIT_TIME}/gdutdays.jar"
 #  allow_failure: true
 #  artifacts:
 #    reports:
@@ -247,7 +252,7 @@ image-sign:
     - echo "============================= LOGIN TO HARBOR =============================="
     - cosign login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
     - echo "=============================== IMAGE SIGN ================================="
-    - cosign sign --key cosign.key ${HARBORHOST}/gdutday/gdutday:latest
+    - cosign sign --key cosign.key ${HARBORHOST}/gdutdays/gdutdays:latest
     - echo "================================ EXPORT KEY ================================"
     - echo "The Password of the key is Harbor account's password, the key will reserved for 30 minutes."
     - echo "COMMIT_TIME=${COMMIT_TIME}" >> build.env
@@ -313,31 +318,21 @@ docker-deploy:
     ## command if you have more than one server to connect to.
     ##
     - ssh-keyscan ${SERVER_HOST} >> ~/.ssh/known_hosts
-    - ssh-keyscan -p 1922 ${BASTION_HOST} >> ~/.ssh/known_hosts || true
-    - ssh-keyscan -p 2322 ${BASTION_HOST} >> ~/.ssh/known_hosts || true
+    #- ssh-keyscan -p 1922 ${BASTION_HOST} >> ~/.ssh/known_hosts || true
+    #- ssh-keyscan -p 2322 ${BASTION_HOST} >> ~/.ssh/known_hosts || true
     - chmod 644 ~/.ssh/known_hosts
   script:
     - echo "============================= PULL LATEST IMAGE ============================"
-    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker pull ${HARBORHOST}/gdutday/gdutday:latest"
-    - ssh -p 1922 ${SERVER_USERNAME}@${BASTION_HOST} "docker pull ${HARBORHOST}/gdutday/gdutday:latest" || true
-    - ssh -p 2322 ${SERVER_USERNAME}@${BASTION_HOST} "docker pull ${HARBORHOST}/gdutday/gdutday:latest" || true
+    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker pull ${HARBORHOST}/gdutdays/gdutdays:latest"
     - echo "============================ GET OLD IMAGE INFO ============================"
-    - export OLD_IMAGE_INFO=$(ssh $SERVER_USERNAME@$SERVER_HOST "docker inspect --format='{{.Image}}' gdutday4")
+    - export OLD_IMAGE_INFO=$(ssh $SERVER_USERNAME@$SERVER_HOST "docker inspect --format='{{.Image}}' gdutdays4")
     - echo "============================ STOP OLD CONTAINER ============================"
-    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker stop gdutday4" || true
-    - ssh -p 1922 ${SERVER_USERNAME}@${BASTION_HOST} "docker stop gdutday4" || true
-    - ssh -p 2322 ${SERVER_USERNAME}@${BASTION_HOST} "docker stop gdutday4" || true
+    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker stop gdutdays4" || true
     - echo "=========================== REMOVE OLD CONTAINER ==========================="
-    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker rm gdutday4" || true
-    - ssh -p 1922 ${SERVER_USERNAME}@${BASTION_HOST} "docker rm gdutday4" || true
-    - ssh -p 2322 ${SERVER_USERNAME}@${BASTION_HOST} "docker rm gdutday4" || true
+    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker rm gdutdays4" || true
     - echo "============================= REMOVE OLD IMAGE ============================="
     - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker rmi ${OLD_IMAGE_INFO}" || true
-    - ssh -p 1922 ${SERVER_USERNAME}@${BASTION_HOST} "docker rmi ${OLD_IMAGE_INFO}" || true
-    - ssh -p 2322 ${SERVER_USERNAME}@${BASTION_HOST} "docker rmi ${OLD_IMAGE_INFO}" || true
     - echo "=========================== DEPLOY NEW CONTAINER ==========================="
-    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker run -d  -p 1888:8080 --name gdutday4 --restart=always ${HARBORHOST}/gdutday/gdutday:latest"
-    - ssh -p 1922 ${SERVER_USERNAME}@${BASTION_HOST} "docker run -d  -p 1888:8080 --name gdutday4 --restart=always ${HARBORHOST}/gdutday/gdutday:latest" || true
-    - ssh -p 2322 ${SERVER_USERNAME}@${BASTION_HOST} "docker run -d  -p 1888:8080 --name gdutday4 --restart=always ${HARBORHOST}/gdutday/gdutday:latest" || true
+    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker run -d  -p 1888:8080 --name gdutdays4 --restart=always ${HARBORHOST}/gdutdays/gdutdays:latest"
   only:
     - dev
