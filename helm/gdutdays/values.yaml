@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: registry.gdutnic.com/gdutdays/gdutdays4
+  repository: registry.gdutnic.com/gdutdays/gdutdays
   tag: latest
   pullPolicy: IfNotPresent
 
