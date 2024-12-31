@@ -366,6 +366,12 @@ helm-deploy:
   image: registry.gdut.edu.cn/docker/dtzar/helm-kubectl:3.8.0
   tags:
     - dev
+  before_script:
+    # 配置 Helm 和 Kubernetes
+    - export KUBECONFIG=$CI_PROJECT_DIR/kubeconfig
+    - echo "$KUBECONFIG_DATA" | base64 -d > $KUBECONFIG
+    - helm repo add stable https://charts.helm.sh/stable
+    - helm repo update
   script:
     - echo "============================= LOGIN TO HARBOR =============================="
     - helm registry login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
