@@ -44,11 +44,6 @@ sonarqube-check:
   script:
     - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -DskipTests -Dmaven.repo.local=cache
   allow_failure: true
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-    - if: $CI_COMMIT_BRANCH == 'master'
-    - if: $CI_COMMIT_BRANCH == 'main'
-    - if: $CI_COMMIT_BRANCH == 'develop'
   only:
     - dev
 
