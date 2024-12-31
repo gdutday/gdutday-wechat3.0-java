@@ -190,7 +190,7 @@ helm-build:
     - echo "=============================== INSTALL HELM ==============================="
     - apt update
     - apt install curl -y
-    - curl https://gdutnic:nic-wg67@d.gdutnic.com/nicdown/https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+    - curl https://${DOWNLOAD_USER}:${DOWNLOAD_PASSWORD}@d.gdutnic.com/nicdown/https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
     - echo "============================= LOGIN TO HARBOR =============================="
     - helm registry login ${HARBORHOST} --username ${USERNAME} --password ${PASSWORD}
     #    - echo "=========================== GENERATE IMAGE TAGS ============================"
