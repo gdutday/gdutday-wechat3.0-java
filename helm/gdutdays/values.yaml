@@ -1,0 +1,39 @@
+replicaCount: 1
+
+image:
+  repository: registry.gdutnic.com/gdutdays/gdutdays4
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 1880  # 更新 targetPort 为 1880
+
+ingress:
+  enabled: false
+  className: "nginx"  # 根据您的 Ingress Controller 的 class 名称
+  annotations:
+    nginx.ingress.kubernetes.io/server-tokens: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /gdutDay3/$1
+  hosts:
+    - host: gdutdays.gdutelc.com
+      paths:
+        - path: /v3/(.*)
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: gdutdays-tls
+      hosts:
+        - gdutdays.gdutelc.com
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
