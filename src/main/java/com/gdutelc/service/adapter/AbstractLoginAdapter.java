@@ -132,7 +132,8 @@ public abstract class AbstractLoginAdapter implements LoginService {
             }
             if (userType == UNDER_GRADUATE) {
                 // 本科登录，传入本科教务系统地址
-//                myokHttpClient = okHttpUtils.makeOkhttpClientAutoRedirect(cookieJar);
+                // 修改回自动重定向地址，便于系统自动重新认证
+                myokHttpClient = okHttpUtils.makeOkhttpClientAuto(cookieJar);
                 this.postLoginByUrl(UNDER_GRADUATE_LOGIN, myokHttpClient);
                 cookieStr = OkHttpUtils.getCookies(cookieJar.cookies);
             } else if (userType == GRADUATE) {

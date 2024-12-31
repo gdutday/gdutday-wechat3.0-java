@@ -36,7 +36,12 @@ public class OkHttpUtils {
                 .build();
     }
 
-
+    public OkHttpClient makeOkhttpClientAuto(CookieJar cookieJar) {
+        return okHttpClient.newBuilder()
+                .cookieJar(cookieJar)
+                .followRedirects(true) // 取消自动重定向，登录的时候手动handle
+                .build();
+    }
     /**
      * 朴素的okhttpClient，后续需要统一优化
      * 后续需要优化 连接池和新建的问题
