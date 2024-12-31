@@ -179,23 +179,19 @@ docker-build-and-push:
     - dev
 
 helm-build:
-  image: ubuntu:20.04
+  image: registry.gdut.edu.cn/docker/dtzar/helm-kubectl:3.8.0
   stage: build-phase-2
   tags:
     - dev
+  before_script:
+    # 配置 Helm 和 Kubernetes
+    - export KUBECONFIG=$CI_PROJECT_DIR/kubeconfig
+    - echo "$KUBECONFIG_DATA" | base64 -d > $KUBECONFIG
+    - helm repo add stable https://charts.helm.sh/stable
+    - helm repo update
   script:
-    - echo "================================= LOAD ENV ================================="
-    - env
-    - echo "COMMIT_TIME=$COMMIT_TIME"
-    - echo "=============================== INSTALL HELM ==============================="
-    - apt update
-    - apt install curl -y
-    - curl https://${DOWNLOAD_USER}:${DOWNLOAD_PASSWORD}@d.gdutnic.com/nicdown/https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
     - echo "============================= LOGIN TO HARBOR =============================="
     - helm registry login ${HARBORHOST} --username ${USERNAME} --password ${PASSWORD}
-    #    - echo "=========================== GENERATE IMAGE TAGS ============================"
-    #    - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
-    #    - echo "The commit timestamp is $(echo $COMMIT_TIME | sed 's/[-T:.]//g')"
     - echo "============================== PACKAGE CHART ==============================="
     - helm package helm/gdutdays --version ${BIG_VERSION}-$(echo $COMMIT_TIME)
     - echo "=============================== PUSH CHARTS ================================"
@@ -203,6 +199,32 @@ helm-build:
   artifacts:
     reports:
       dotenv: build.env
+
+#helm-build:
+#  image: ubuntu:20.04
+#  stage: build-phase-2
+#  tags:
+#    - dev
+#  script:
+#    - echo "================================= LOAD ENV ================================="
+#    - env
+#    - echo "COMMIT_TIME=$COMMIT_TIME"
+#    - echo "=============================== INSTALL HELM ==============================="
+#    - apt update
+#    - apt install curl -y
+#    - curl https://${DOWNLOAD_USER}:${DOWNLOAD_PASSWORD}@d.gdutnic.com/nicdown/https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+#    - echo "============================= LOGIN TO HARBOR =============================="
+#    - helm registry login ${HARBORHOST} --username ${USERNAME} --password ${PASSWORD}
+#    #    - echo "=========================== GENERATE IMAGE TAGS ============================"
+#    #    - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
+#    #    - echo "The commit timestamp is $(echo $COMMIT_TIME | sed 's/[-T:.]//g')"
+#    - echo "============================== PACKAGE CHART ==============================="
+#    - helm package helm/gdutdays --version ${BIG_VERSION}-$(echo $COMMIT_TIME)
+#    - echo "=============================== PUSH CHARTS ================================"
+#    - helm push gdutdays-* oci://${HARBORHOST}/gdutdays
+#  artifacts:
+#    reports:
+#      dotenv: build.env
 
 
 release-new-version:
