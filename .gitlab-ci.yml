@@ -1,4 +1,4 @@
-image: ubuntu:22.04
+image: registry.gdut.edu.cn/docker/library/ubuntu:22.04
 
 stages:
   - check-phase-1
@@ -16,24 +16,24 @@ variables:
 
 sonarqube-check:
   stage: check-phase-1
-  image: maven:3-eclipse-temurin-17
+  image: registry.gdut.edu.cn/docker/library/maven:3-eclipse-temurin-17
   tags:
     - maven
   before_script:
     - echo "=========================== CHANGE MAVEN MIRROR ============================"
     - echo '<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
-            <localRepository>/cache/.m2</localRepository>
-            <mirrors>
-              <mirror>
-                <id>nexus-aliyun</id>
-                <mirrorOf>*</mirrorOf>
-                <name>Nexus aliyun</name>
-                <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
-              </mirror>
-            </mirrors>
-            </settings>' > $HOME/.m2/settings.xml
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+      <localRepository>/cache/.m2</localRepository>
+      <mirrors>
+      <mirror>
+      <id>nexus-aliyun</id>
+      <mirrorOf>*</mirrorOf>
+      <name>Nexus aliyun</name>
+      <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+      </mirror>
+      </mirrors>
+      </settings>' > $HOME/.m2/settings.xml
   variables:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
     GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
@@ -42,31 +42,31 @@ sonarqube-check:
     paths:
       - .sonar/cache
   script:
-    - mvn verify sonar:sonar -DskipTests -Dmaven.repo.local=cache
+    - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -DskipTests -Dmaven.repo.local=cache
   allow_failure: true
   only:
     - dev
 
 maven-build:dev:
-  image: maven:3.6-openjdk-17
+  image: registry.gdut.edu.cn/docker/library/maven:3.6-openjdk-17
   stage: build-phase-1
   tags:
     - maven
   before_script:
     - echo "=========================== CHANGE MAVEN MIRROR ============================"
     - echo '<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
-            <localRepository>/cache/.m2</localRepository>
-            <mirrors>
-              <mirror>
-                <id>nexus-aliyun</id>
-                <mirrorOf>*</mirrorOf>
-                <name>Nexus aliyun</name>
-                <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
-              </mirror>
-            </mirrors>
-            </settings>' > $HOME/.m2/settings.xml
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+      <localRepository>/cache/.m2</localRepository>
+      <mirrors>
+      <mirror>
+      <id>nexus-aliyun</id>
+      <mirrorOf>*</mirrorOf>
+      <name>Nexus aliyun</name>
+      <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+      </mirror>
+      </mirrors>
+      </settings>' > $HOME/.m2/settings.xml
   script:
     - echo "========================== GENERATE VERSION TAGS ==========================="
     - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
@@ -86,7 +86,7 @@ maven-build:dev:
     - dev
 
 maven-build:main:
-  image: maven:3.6-openjdk-17
+  image: registry.gdut.edu.cn/docker/library/maven:3.6-openjdk-17
   stage: build-phase-1
   tags:
     - maven
@@ -114,7 +114,7 @@ maven-build:main:
     - echo "=========================== EXPORT VERSION TAGS ============================"
     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
     - echo "========================== PUBLISH MAVEN PACKAGE ==========================="
-    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/${CI_PROJECT_ID}/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
+    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/${CI_PROJECT_ID}/packages/generic/gdutdays/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
   artifacts:
     reports:
       dotenv: build.env
@@ -138,8 +138,8 @@ maven-build:main:
 #      /kaniko/executor
 #      --context "${CI_PROJECT_DIR}"
 #      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-#      --destination "${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-${COMMIT_TIME}"
-#      --destination "${HARBORHOST}/gdutday/gdutday:latest"
+#      --destination "${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-${COMMIT_TIME}"
+#      --destination "${HARBORHOST}/gdutdays/gdutdays:latest"
 #  artifacts:
 #    reports:
 #      dotenv: build.env
@@ -148,7 +148,7 @@ maven-build:main:
 #    - dev
 
 docker-build-and-push:
-  image: docker:stable
+  image: registry.gdut.edu.cn/docker/library/docker:stable
   stage: build-phase-2
   tags:
     - Docker
@@ -161,14 +161,14 @@ docker-build-and-push:
     - echo "============================= LOGIN TO HARBOR =============================="
     - docker login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
     - echo "=========================== BUILD DOCKER IMAGES ============================"
-    - docker build -t ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME) .
+    - docker build -t ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME) .
     - echo "========================== TAG IMAGES WITH LATEST =========================="
-    - docker tag ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME) ${HARBORHOST}/gdutday/gdutday:latest
+    - docker tag ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME) ${HARBORHOST}/gdutdays/gdutdays:latest
     - echo "========================== PUSH IMAGES TO HARBOR ==========================="
-    - docker push ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME)
-    - docker push ${HARBORHOST}/gdutday/gdutday:latest
+    - docker push ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    - docker push ${HARBORHOST}/gdutdays/gdutdays:latest
     - echo "============================= CLEAN UP MIRRORS ============================="
-    - docker rmi ${HARBORHOST}/gdutday/gdutday:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    - docker rmi ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME)
     - echo "============================ EXPORT IMAGE TAGS ============================="
     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
   artifacts:
@@ -188,7 +188,7 @@ release-new-version:
     - env
     - echo "COMMIT_TIME=${COMMIT_TIME}"
     #- echo "=================== PUBLISH JAR FILE TO Package Registry ==================="
-    #- curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/2/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
+    #- curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutnic.com/api/v4/projects/2/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutdays.jar"
   release:
     tag_name: "${BIG_VERSION}-${COMMIT_TIME}"
     description: "This is a release of version ${BIG_VERSION}-${COMMIT_TIME}."
@@ -206,7 +206,7 @@ release-new-version:
 #    - env
 #    - echo "COMMIT_TIME=${COMMIT_TIME}"
 #    - echo "=================== PUBLISH JAR FILE TO Package Registry ==================="
-#    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/1/packages/generic/gdutday/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
+#    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutnic.com/api/v4/projects/1/packages/generic/gdutdays/${BIG_VERSION}-${COMMIT_TIME}/gdutdays.jar"
 #  allow_failure: true
 #  artifacts:
 #    reports:
@@ -216,7 +216,7 @@ release-new-version:
 
 
 image-sign:
-  image: ubuntu:22.04
+  image: registry.gdut.edu.cn/docker/library/ubuntu:22.04
   stage: build-phase-3
   tags:
     - dev
@@ -238,7 +238,7 @@ image-sign:
     - env
     - echo "COMMIT_TIME=${COMMIT_TIME}"
     - echo "============================== INSTALL COSIGN =============================="
-    - wget --no-check-certificate "https://az1.minio.gdutnic.com/gdutnic/public/cosign_1.6.0_amd64.deb"
+    - wget --no-check-certificate "https://cn-gz-1.minio.gdutnic.com/gdutnic/public/cosign_1.6.0_amd64.deb"
     - dpkg -i cosign_1.6.0_amd64.deb
     - mv /usr/local/bin/cosign-linux-amd64 /usr/local/bin/cosign
     - echo "=============================== KEY GENERATE ==============================="
@@ -247,7 +247,7 @@ image-sign:
     - echo "============================= LOGIN TO HARBOR =============================="
     - cosign login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
     - echo "=============================== IMAGE SIGN ================================="
-    - cosign sign --key cosign.key ${HARBORHOST}/gdutday/gdutday:latest
+    - cosign sign --key cosign.key ${HARBORHOST}/gdutdays/gdutdays:latest
     - echo "================================ EXPORT KEY ================================"
     - echo "The Password of the key is Harbor account's password, the key will reserved for 30 minutes."
     - echo "COMMIT_TIME=${COMMIT_TIME}" >> build.env
@@ -263,24 +263,25 @@ image-sign:
 
 docker-deploy:
   stage: build-phase-4
+  image: registry.gdut.edu.cn/docker/kroniak/ssh-client:latest
   tags:
     - dev
   before_script:
-    - echo "============================ CHANGE APT MIRROR ============================="
-    - echo 'deb http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
-      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
-      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
-      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
-      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
-      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
-      deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
-      deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse' > /etc/apt/sources.list
-    - echo "========================== DOWNLOAD OPENSSH CLIENT ========================="
+    #- echo "============================ CHANGE APT MIRROR ============================="
+    #- echo 'deb http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
+    #  deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy main restricted universe multiverse
+    #  deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+    #  deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+    #  deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+    #  deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+    #  deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
+    #  deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse' > /etc/apt/sources.list
+    #- echo "========================== DOWNLOAD OPENSSH CLIENT ========================="
     ##
     ## Install ssh-agent if not already installed, it is required by Docker.
     ## (change apt-get to yum if you use an RPM-based image)
     ##
-    - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+    #- 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
     - echo "=============================== RUN SSH AGENT =============================="
     ##
     ## Run ssh-agent (inside the build environment)
@@ -312,19 +313,21 @@ docker-deploy:
     ## command if you have more than one server to connect to.
     ##
     - ssh-keyscan ${SERVER_HOST} >> ~/.ssh/known_hosts
+    #- ssh-keyscan -p 1922 ${BASTION_HOST} >> ~/.ssh/known_hosts || true
+    #- ssh-keyscan -p 2322 ${BASTION_HOST} >> ~/.ssh/known_hosts || true
     - chmod 644 ~/.ssh/known_hosts
   script:
     - echo "============================= PULL LATEST IMAGE ============================"
-    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker pull ${HARBORHOST}/gdutday/gdutday:latest"
+    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker pull ${HARBORHOST}/gdutdays/gdutdays:latest"
     - echo "============================ GET OLD IMAGE INFO ============================"
-    - export OLD_IMAGE_INFO=$(ssh $SERVER_USERNAME@$SERVER_HOST "docker inspect --format='{{.Image}}' gdutday4")
+    - export OLD_IMAGE_INFO=$(ssh $SERVER_USERNAME@$SERVER_HOST "docker inspect --format='{{.Image}}' gdutdays4")
     - echo "============================ STOP OLD CONTAINER ============================"
-    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker stop gdutday4" || true
+    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker stop gdutdays4" || true
     - echo "=========================== REMOVE OLD CONTAINER ==========================="
-    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker rm gdutday4" || true
+    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker rm gdutdays4" || true
     - echo "============================= REMOVE OLD IMAGE ============================="
     - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker rmi ${OLD_IMAGE_INFO}" || true
     - echo "=========================== DEPLOY NEW CONTAINER ==========================="
-    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker run -d  -p 1888:8080 --name gdutday4 --restart=always ${HARBORHOST}/gdutday/gdutday:latest"
+    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker run -d  -p 1888:8080 --name gdutdays4 --restart=always ${HARBORHOST}/gdutdays/gdutdays:latest"
   only:
     - dev
