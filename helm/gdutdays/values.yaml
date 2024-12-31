@@ -12,6 +12,7 @@ service:
   type: ClusterIP
   port: 80
   targetPort: 8080  # 更新 targetPort 为 1880
+  # nodePort: 31880 # 可选，如果需要指定 NodePort
 
 ingress:
   enabled: false
