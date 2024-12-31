@@ -114,7 +114,7 @@ maven-build:main:
     - echo "=========================== EXPORT VERSION TAGS ============================"
     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
     - echo "========================== PUBLISH MAVEN PACKAGE ==========================="
-    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutelc.com/api/v4/projects/${CI_PROJECT_ID}/packages/generic/gdutdays/${BIG_VERSION}-${COMMIT_TIME}/gdutday.jar"
+    - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutnic.com/api/v4/projects/${CI_PROJECT_ID}/packages/generic/gdutdays/${BIG_VERSION}-${COMMIT_TIME}/gdutdays.jar"
   artifacts:
     reports:
       dotenv: build.env
