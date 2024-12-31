@@ -17,8 +17,8 @@
         <java.version>17</java.version>
         <swagger.version>3.0.0</swagger.version>
         <snakeyaml.version>2.2</snakeyaml.version>
-        <sonar.projectKey>gdutdays_gdutday_4061ee04-a2bb-415d-b992-dd9e5b315cd1</sonar.projectKey>
-        <sonar.projectName>gdutday</sonar.projectName>
+        <sonar.projectKey>gregPerlinLi_gdutdays_58e151d4-3325-4c4b-b8b8-6a35fd22c922</sonar.projectKey>
+        <sonar.projectName>gdutdays</sonar.projectName>
         <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
     </properties>
 
