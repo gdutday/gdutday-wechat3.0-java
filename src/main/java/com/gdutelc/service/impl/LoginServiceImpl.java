@@ -7,16 +7,10 @@ import com.gdutelc.domain.GdutDayWechatUser;
 import com.gdutelc.framework.common.HttpStatus;
 import com.gdutelc.framework.exception.ServiceException;
 import com.gdutelc.service.adapter.AbstractLoginAdapter;
-import com.gdutelc.utils.GdutDayCookieJar;
-import com.gdutelc.utils.JsoupUtils;
-import com.gdutelc.utils.LiUtils;
-import com.gdutelc.utils.OkHttpUtils;
+import com.gdutelc.utils.*;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import okhttp3.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -27,8 +21,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.gdutelc.common.constant.UrlConstant.GRADUATE_EHALL_LOGIN;
-import static com.gdutelc.common.constant.UrlConstant.JXFW_LOGIN;
+import static com.gdutelc.common.constant.UrlConstant.*;
 
 /**
  * @author Ymri
@@ -80,7 +73,7 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
     @Override
     public void preLogin(GdutDayWechatUser gdutDayWechatUser, OkHttpClient myokHttpClient) {
         String html;
-        try (Response response = okHttpUtils.get(myokHttpClient, UrlConstant.EHALL_URL)) {
+        try (Response response = okHttpUtils.get(myokHttpClient, EHALL_URL)) {
             assert response.body() != null;
             html = response.body().string();
         } catch (IOException e) {
@@ -120,10 +113,12 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
         tempMap.put("password", LiUtils.cbcEncrypt(gdutDayWechatUser.getPassword(), pwdEncryptSalt));
         RequestBody requestBody = JsoupUtils.map2PostUrlCodeString(tempMap);
         // 由于存在账号密码输入错误，所以只重试1次，不然错误密码次数过多很快就要滑块了
-        try (Response responses = okHttpUtils.postByFormUrl(myokHttpClient, GRADUATE_EHALL_LOGIN, requestBody)) {
-            if (responses.code() != 200) {
-                throw new ServiceException("账号或密码错误", HttpStatus.f005);
-            }
+
+        try (Response responses = okHttpUtils.postByFormUrl(myokHttpClient, EHALL_URL, requestBody)) {
+            // 手动重定向认证
+            debugRedirect(myokHttpClient, responses);
+//            log.info("{}",responses.body());
+            // 修改不允许重定向，手动挨个测试
         } catch (ServiceException e) {
             throw new ServiceException("账号或密码错误", HttpStatus.f005);
         } catch (Exception e) {
@@ -147,5 +142,46 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
 
     }
 
+    private void debugRedirect(OkHttpClient client, Response response) throws IOException {
+        int responseCode = response.code();
+        // 需要发送埋点 追踪 请求
+        String location = response.header("Location");
+//        log.debug("Response Code: {}", location);
+        int maxTime = 0;
+        // 在请求都上添加 https://ehall.gdut.edu.cn:443/login?service=https://ehall.gdut.edu.cn/new/index.html&ticket=
+        while (responseCode == 301 || responseCode == 302 || responseCode == 303 || responseCode == 307 || responseCode == 308) {
+//            System.out.println("Redirecting to: " + location);
 
+            Request newRequest = new Request.Builder()
+                    .url(location).header("Host", "authserver.gdut.edu.cn")
+                    .header("Pragma", "no-cache")
+                    .header("Referer", "https://authserver.gdut.edu.cn/authserver/login?type=userNameLogin")
+                    .header("sec-ch-ua", "\"(Not(A:Brand\";v=\"99\", \"Google Chrome\";v=\"130\", \"Chromium\";v=\"130\"")
+                    .header("sec-ch-ua-full-version-list", "\"(Not(A:Brand\";v=\"99.0.0.0\", \"Google Chrome\";v=\"130\", \"Chromium\";v=\"130\"")
+                    .header("sec-ch-ua-mobile", "?0")
+                    .header("sec-ch-ua-platform", "\"Linux\"")
+                    .header("sec-fetch-dest", "document")
+                    .header("sec-fetch-mode", "navigate")
+                    .header("sec-fetch-site", "same-site")
+                    .header("sec-fetch-user", "?1")
+                    .header("upgrade-insecure-requests", "1")
+                    .header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6613.35 Safari/537.36")
+//                    .headers(headers)
+                    .get() // 使用 GET 方法
+                    .build();
+
+            response.close(); // 关闭上一个响应
+            //
+            response = client.newCall(newRequest).execute();
+            responseCode = response.code();
+//            log.debug("Response Code: {}", responseCode);
+//            log.debug("Response Body: {}", response.body().string());
+            location = response.header("Location");
+            // 最后会无限重定向，因为nginx一直永远返回302
+            if(StringUtils.isEmpty(location)||maxTime>3){
+                break;
+            }
+            maxTime++;
+        }
+    }
 }

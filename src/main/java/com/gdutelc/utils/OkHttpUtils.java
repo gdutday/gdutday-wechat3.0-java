@@ -32,8 +32,10 @@ public class OkHttpUtils {
     public OkHttpClient makeOkhttpClient(CookieJar cookieJar) {
         return okHttpClient.newBuilder()
                 .cookieJar(cookieJar)
+                .followRedirects(false) // 取消自动重定向，登录的时候手动handle
                 .build();
     }
+
 
     /**
      * 朴素的okhttpClient，后续需要统一优化
@@ -171,6 +173,11 @@ public class OkHttpUtils {
                 .url(url)
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/114.0")
+                // 奇怪的埋点，它要就给呗~
+                .header("sec-ch-ua","\"(Not(A:Brand\";v=\"99\", \"Google Chrome\";v=\"129\", \"Chromium\";v=\"129\"")
+                .header("sec-ch-ua-full-version-list","\"(Not(A:Brand\";v=\"99.0.0.0\", \"Google Chrome\";v=\"129\", \"Chromium\";v=\"129\"")
+                .header("sec-ch-ua-mobile","?0")
+                .header("sec-ch-ua-platform","\"Linux\"")
                 .post(postData)
                 .build();
         try {

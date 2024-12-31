@@ -21,9 +21,9 @@ public class UrlConstant {
     public static final String UNDER_EXAME_SCORE = "https://jxfw.gdut.edu.cn/xskccjxx!getDataList.action";
     public static final String UNDER_REFER = "https://jxfw.gdut.edu.cn/";
     // 研究生登录链接
-    public static final String GRADUATE_EHALL_LOGIN = "https://authserver.gdut.edu.cn/authserver/login?service=http%3A%2F%2Fehall.gdut.edu.cn%2Fgsapp%2Fsys%2Fwdkbapp%2F*default%2Findex.do%3Famp_sec_version_%3D1%26gid_%3DanF6SjBZK2R1WVVlQ2l5cjJRSlBlckVnR05sSFVYRlVRWHVEYTVpT01WQ3Z0M01ENktsWXA5cHoveWxwNTdaSU9PMVRjWTF1Wk90Y3g4QjVOb3VhbWc9PQ%26EMAP_LANG%3Dzh%26THEME%3Dgolden%23%2Fxskcb";
+    public static final String GRADUATE_EHALL_LOGIN = "https://ehall.gdut.edu.cn/gsapp/sys/wdkbapp/*default/index.do?amp_sec_version_=1&gid_=anF6SjBZK2R1WVVlQ2l5cjJRSlBlckVnR05sSFVYRlVRWHVEYTVpT01WQ3Z0M01ENktsWXA5cHoveWxwNTdaSU9PMVRjWTF1Wk90Y3g4QjVOb3VhbWc9PQ&EMAP_LANG=zh&THEME=golden#/xskcb";
 
-    public static final String GRADUATE_EHALL_SCORE_LOGIN="https://authserver.gdut.edu.cn/authserver/login?service=https://ehall.gdut.edu.cn/gsapp/sys/wdcjapp/*default/index.do";
+    public static final String GRADUATE_EHALL_SCORE_LOGIN="https://ehall.gdut.edu.cn/gsapp/sys/wdcjapp/*default/index.do#/wdcj";
     // 研究生学期信息
     public static final String GRADUATE_SEMESTER = "http://ehall.gdut.edu.cn/gsapp/sys/wdkbapp/modules/xskcb/kfdxnxqcx.do";
     // 研究生课表接口，需要先拿到学期信息
@@ -39,7 +39,7 @@ public class UrlConstant {
 
 
     // 登录ehall大厅 pre登录
-    public static final String EHALL_URL = "https://authserver.gdut.edu.cn/authserver/login?service=https%3A%2F%2Fehall.gdut.edu.cn%3A443%2Flogin%3Fservice%3Dhttps%3A%2F%2Fehall.gdut.edu.cn%2Fnew%2Findex.html";
+    public static final String EHALL_URL = "https://authserver.gdut.edu.cn/authserver/login?type=userNameLogin";
 
     // ehall的个人信息接口，用来获取正确的学号
     public static final String EHALL_USER_INFO = "https://authserver.gdut.edu.cn/personalInfo/common/getUserConf";
