@@ -11,7 +11,7 @@ fullnameOverride: ""
 service:
   type: ClusterIP
   port: 80
-  targetPort: 1880  # 更新 targetPort 为 1880
+  targetPort: 8080  # 更新 targetPort 为 1880
 
 ingress:
   enabled: false
