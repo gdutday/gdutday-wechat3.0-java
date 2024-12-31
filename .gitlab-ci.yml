@@ -238,7 +238,7 @@ image-sign:
     - env
     - echo "COMMIT_TIME=${COMMIT_TIME}"
     - echo "============================== INSTALL COSIGN =============================="
-    - wget --no-check-certificate "https://az1.minio.gdutnic.com/gdutnic/public/cosign_1.6.0_amd64.deb"
+    - wget --no-check-certificate "https://cn-gz-1.minio.gdutnic.com/gdutnic/public/cosign_1.6.0_amd64.deb"
     - dpkg -i cosign_1.6.0_amd64.deb
     - mv /usr/local/bin/cosign-linux-amd64 /usr/local/bin/cosign
     - echo "=============================== KEY GENERATE ==============================="
