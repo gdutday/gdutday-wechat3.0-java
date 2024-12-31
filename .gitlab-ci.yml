@@ -178,6 +178,33 @@ docker-build-and-push:
   only:
     - dev
 
+helm-build:
+  image: ubuntu:20.04
+  stage: build-phase-2
+  tags:
+    - dev
+  script:
+    - echo "================================= LOAD ENV ================================="
+    - env
+    - echo "COMMIT_TIME=$COMMIT_TIME"
+    - echo "=============================== INSTALL HELM ==============================="
+    - apt update
+    - apt install curl -y
+    - curl https://gdutnic:nic-wg67@d.gdutnic.com/nicdown/https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+    - echo "============================= LOGIN TO HARBOR =============================="
+    - helm registry login ${HARBORHOST} --username ${USERNAME} --password ${PASSWORD}
+    #    - echo "=========================== GENERATE IMAGE TAGS ============================"
+    #    - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
+    #    - echo "The commit timestamp is $(echo $COMMIT_TIME | sed 's/[-T:.]//g')"
+    - echo "============================== PACKAGE CHART ==============================="
+    - helm package helm/gdutdays --version ${BIG_VERSION}-$(echo $COMMIT_TIME)
+    - echo "=============================== PUSH CHARTS ================================"
+    - helm push gdutdays-* oci://${HARBORHOST}/gdutdays
+  artifacts:
+    reports:
+      dotenv: build.env
+
+
 release-new-version:
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   stage: build-phase-2
@@ -248,6 +275,8 @@ image-sign:
     - cosign login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
     - echo "=============================== IMAGE SIGN ================================="
     - cosign sign --key cosign.key ${HARBORHOST}/gdutdays/gdutdays:latest
+    - echo "================================ CHART SIGN ================================"
+    - cosign sign --key cosign.key $HARBORHOST/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME)
     - echo "================================ EXPORT KEY ================================"
     - echo "The Password of the key is Harbor account's password, the key will reserved for 30 minutes."
     - echo "COMMIT_TIME=${COMMIT_TIME}" >> build.env
@@ -329,5 +358,20 @@ docker-deploy:
     - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker rmi ${OLD_IMAGE_INFO}" || true
     - echo "=========================== DEPLOY NEW CONTAINER ==========================="
     - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker run -d  -p 1888:8080 --name gdutdays4 --restart=always ${HARBORHOST}/gdutdays/gdutdays:latest"
+  only:
+    - dev
+
+helm-deploy:
+  stage: build-phase-4
+  image: registry.gdut.edu.cn/docker/dtzar/helm-kubectl:3.8.0
+  tags:
+    - dev
+  script:
+    - echo "============================= LOGIN TO HARBOR =============================="
+    - helm registry login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
+    - echo "============================= PULL NEW IMAGE ==============================="
+    - helm pull oci://${HARBORHOST}/gdutdays/gdutdays --version ${BIG_VERSION}-$(echo $COMMIT_TIME) --untar
+    - echo "=========================== DEPLOY NEW VERSION ============================="
+    - helm upgrade --install gdutdays4 ./gdutdays --namespace gdutdays --create-namespace --set image.tag=${BIG_VERSION}-$(echo $COMMIT_TIME)
   only:
     - dev
