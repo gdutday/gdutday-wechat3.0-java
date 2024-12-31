@@ -1,6 +1,16 @@
 apiVersion: v2
 name: gdutdays
 description: A Helm chart for deploying gdutdays v4 application backend
+home: https://gdutdays.gdutelc.com
+keywords:
+  - gdut
+  - gdutdays
 type: application
 version: 0.1.0
-appVersion: "latest"
+appVersion: "v4"
+maintainers:
+  - email: lihaolin13@outlook.com
+    name: gregPerlinLi
+sources:
+  - https://github.com/gdutday/gdutday-wechat3.0-java
+  - https://git.gdutnic.com/gregPerlinLi/gdutdays
