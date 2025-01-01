@@ -6,6 +6,7 @@ stages:
   - build-phase-2
   - build-phase-3
   - build-phase-4
+  - build-phase-5
 
 cache:
   paths:
@@ -180,7 +181,7 @@ docker-build-and-push:
 
 helm-build:
   image: registry.gdut.edu.cn/docker/dtzar/helm-kubectl:3.8.0
-  stage: build-phase-2
+  stage: build-phase-3
   tags:
     - dev
   before_script:
@@ -190,6 +191,9 @@ helm-build:
     - helm repo add stable https://charts.helm.sh/stable
     - helm repo update
   script:
+    - echo "================================= LOAD ENV ================================="
+    - env
+    - echo "COMMIT_TIME=${COMMIT_TIME}"
     - echo "============================= LOGIN TO HARBOR =============================="
     - helm registry login ${HARBORHOST} --username ${USERNAME} --password ${PASSWORD}
     - echo "============================== PACKAGE CHART ==============================="
@@ -266,7 +270,7 @@ release-new-version:
 
 image-sign:
   image: registry.gdut.edu.cn/docker/library/ubuntu:22.04
-  stage: build-phase-3
+  stage: build-phase-4
   tags:
     - dev
   before_script:
@@ -313,7 +317,7 @@ image-sign:
     - dev
 
 docker-deploy:
-  stage: build-phase-4
+  stage: build-phase-5
   image: registry.gdut.edu.cn/docker/kroniak/ssh-client:latest
   tags:
     - dev
@@ -384,7 +388,7 @@ docker-deploy:
     - dev
 
 helm-deploy:
-  stage: build-phase-4
+  stage: build-phase-5
   image: registry.gdut.edu.cn/docker/dtzar/helm-kubectl:3.8.0
   tags:
     - dev
