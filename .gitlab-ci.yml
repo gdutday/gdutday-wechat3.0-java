@@ -1,12 +1,12 @@
 image: registry.gdut.edu.cn/docker/library/ubuntu:22.04
 
 stages:
-  - check-phase-1
-  - build-phase-1
-  - build-phase-2
-  - build-phase-3
-  - build-phase-4
-  - build-phase-5
+  - check
+  - maven-build
+  - image-build
+  - release
+  - signing
+  - deploy
 
 cache:
   paths:
@@ -16,7 +16,7 @@ variables:
   BIG_VERSION: v4.0
 
 sonarqube-check:
-  stage: check-phase-1
+  stage: check
   image: registry.gdut.edu.cn/docker/library/maven:3-eclipse-temurin-17
   tags:
     - maven
@@ -50,7 +50,7 @@ sonarqube-check:
 
 maven-build:dev:
   image: registry.gdut.edu.cn/docker/library/maven:3.6-openjdk-17
-  stage: build-phase-1
+  stage: maven-build
   tags:
     - maven
   before_script:
@@ -88,7 +88,7 @@ maven-build:dev:
 
 maven-build:main:
   image: registry.gdut.edu.cn/docker/library/maven:3.6-openjdk-17
-  stage: build-phase-1
+  stage: maven-build
   tags:
     - maven
   before_script:
@@ -124,7 +124,7 @@ maven-build:main:
 
 #docker-build-and-push:
 #  image: registry.gdut.edu.cn/gcr.io/kaniko-project/executor:latest
-#  stage: build-phase-2
+#  stage: image-build
 #  tags:
 #    - kaniko
 #  script:
@@ -150,7 +150,7 @@ maven-build:main:
 
 docker-build-and-push:
   image: registry.gdut.edu.cn/docker/library/docker:stable
-  stage: build-phase-2
+  stage: image-build
   tags:
     - Docker
   services:
@@ -181,7 +181,7 @@ docker-build-and-push:
 
 helm-build:
   image: registry.gdut.edu.cn/docker/dtzar/helm-kubectl:3.8.0
-  stage: build-phase-3
+  stage: image-build
   tags:
     - dev
   before_script:
@@ -206,7 +206,7 @@ helm-build:
 
 #helm-build:
 #  image: ubuntu:20.04
-#  stage: build-phase-2
+#  stage: image-build
 #  tags:
 #    - dev
 #  script:
@@ -233,7 +233,7 @@ helm-build:
 
 release-new-version:
   image: registry.gitlab.com/gitlab-org/release-cli:latest
-  stage: build-phase-2
+  stage: release
   tags:
     - dev
   script:
@@ -251,7 +251,7 @@ release-new-version:
 
 #push-packages:
 #  image: curlimages/curl:latest
-#  stage: build-phase-2
+#  stage: release
 #  tags:
 #    - dev
 #  script:
@@ -270,7 +270,7 @@ release-new-version:
 
 image-sign:
   image: registry.gdut.edu.cn/docker/library/ubuntu:22.04
-  stage: build-phase-4
+  stage: signing
   tags:
     - dev
   before_script:
@@ -317,7 +317,7 @@ image-sign:
     - dev
 
 docker-deploy:
-  stage: build-phase-5
+  stage: deploy
   image: registry.gdut.edu.cn/docker/kroniak/ssh-client:latest
   tags:
     - dev
@@ -388,7 +388,7 @@ docker-deploy:
     - dev
 
 helm-deploy:
-  stage: build-phase-5
+  stage: deploy
   image: registry.gdut.edu.cn/docker/dtzar/helm-kubectl:3.8.0
   tags:
     - dev
