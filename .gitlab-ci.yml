@@ -395,6 +395,9 @@ helm-deploy:
     - helm repo add stable https://charts.helm.sh/stable
     - helm repo update
   script:
+    - echo "================================= LOAD ENV ================================="
+    - env
+    - echo "COMMIT_TIME=${COMMIT_TIME}"
     - echo "============================= LOGIN TO HARBOR =============================="
     - helm registry login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
     - echo "============================= PULL NEW IMAGE ==============================="
