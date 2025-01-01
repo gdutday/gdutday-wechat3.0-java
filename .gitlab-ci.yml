@@ -403,6 +403,6 @@ helm-deploy:
     - echo "============================= PULL NEW IMAGE ==============================="
     - helm pull oci://${HARBORHOST}/gdutdays/gdutdays --version ${BIG_VERSION}-$(echo $COMMIT_TIME) --untar
     - echo "=========================== DEPLOY NEW VERSION ============================="
-    - helm upgrade --install gdutdays4 ./gdutdays --namespace gdutdays --set image.tag=${BIG_VERSION}-$(echo $COMMIT_TIME) --set service.type=NodePort
+    - helm upgrade --install gdutdays4 ./gdutdays --namespace gdutdays --set image.tag=${BIG_VERSION}-$(echo $COMMIT_TIME) --set service.type=NodePort --set service.nodePort=31880
   only:
     - dev
