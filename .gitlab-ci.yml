@@ -199,7 +199,7 @@ helm-build:
     - echo "============================== PACKAGE CHART ==============================="
     - helm package helm/gdutdays --version ${BIG_VERSION}-$(echo $COMMIT_TIME)
     - echo "=============================== PUSH CHARTS ================================"
-    - helm push gdutdays-* oci://${HARBORHOST}/gdutdays
+    - helm push gdutdays-helm-* oci://${HARBORHOST}/gdutdays
   artifacts:
     reports:
       dotenv: build.env
@@ -302,7 +302,7 @@ image-sign:
     - echo "=============================== IMAGE SIGN ================================="
     - cosign sign --key cosign.key ${HARBORHOST}/gdutdays/gdutdays:latest
     - echo "================================ CHART SIGN ================================"
-    - cosign sign --key cosign.key $HARBORHOST/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    - cosign sign --key cosign.key $HARBORHOST/gdutdays/gdutdays-helm:${BIG_VERSION}-$(echo $COMMIT_TIME)
     - echo "================================ EXPORT KEY ================================"
     - echo "The Password of the key is Harbor account's password, the key will reserved for 30 minutes."
     - echo "COMMIT_TIME=${COMMIT_TIME}" >> build.env
@@ -405,8 +405,8 @@ helm-deploy:
     - echo "============================= LOGIN TO HARBOR =============================="
     - helm registry login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
     - echo "============================= PULL NEW IMAGE ==============================="
-    - helm pull oci://${HARBORHOST}/gdutdays/gdutdays --version ${BIG_VERSION}-$(echo $COMMIT_TIME) --untar
+    - helm pull oci://${HARBORHOST}/gdutdays/gdutdays-helm --version ${BIG_VERSION}-$(echo $COMMIT_TIME) --untar
     - echo "=========================== DEPLOY NEW VERSION ============================="
-    - helm upgrade --install gdutdays4 ./gdutdays --namespace gdutdays --set image.tag=${BIG_VERSION}-$(echo $COMMIT_TIME) --set service.type=NodePort --set service.nodePort=31880
+    - helm upgrade --install gdutdays4 ./gdutdays-helm --namespace gdutdays --set image.tag=${BIG_VERSION}-$(echo $COMMIT_TIME) --set service.type=NodePort --set service.nodePort=31880
   only:
     - dev
