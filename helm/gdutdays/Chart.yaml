@@ -2,6 +2,7 @@ apiVersion: v2
 name: gdutdays
 description: A Helm chart for deploying gdutdays v4 application backend
 home: https://gdutdays.gdutelc.com
+icon: https://cn-gz-1.minio.gdutnic.com/gdutnic/public/gdutdays/logo.jpg
 keywords:
   - gdut
   - gdutdays
