@@ -337,6 +337,12 @@ docker-deploy:
     ## (change apt-get to yum if you use an RPM-based image)
     ##
     #- 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+    - echo "================= CREATE SSH DIRECTORY AND GIVE PERMISSION ================="
+    ##
+    ## Create the SSH directory and give it the right permissions
+    ##
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
     - echo "=============================== RUN SSH AGENT =============================="
     ##
     ## Run ssh-agent (inside the build environment)
@@ -347,14 +353,11 @@ docker-deploy:
     ## Give the right permissions, otherwise ssh-add will refuse to add files
     ## Add the SSH key stored in SSH_PRIVATE_KEY file type CI/CD variable to the agent store
     ##
-    - chmod 400 "${SSH_PRIVATE_KEY}"
-    - ssh-add "${SSH_PRIVATE_KEY}"
-    - echo "================= CREATE SSH DIRECTORY AND GIVE PERMISSION ================="
-    ##
-    ## Create the SSH directory and give it the right permissions
-    ##
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
+    #- chmod 400 "${SSH_PRIVATE_KEY}"
+    #- ssh-add "${SSH_PRIVATE_KEY}"
+    - echo ${SSH_PRIVATE_KEY} | base64 -d > ~/.ssh/id_rsa
+    - chmod 400 ~/.ssh/id_rsa
+    - ssh-add ~/.ssh/id_rsa
     - echo "============================== ADD KNOWN HOSTS ============================="
     ##
     ## Assuming you created the SSH_KNOWN_HOSTS variable, uncomment the
