@@ -72,8 +72,8 @@ public class ScheduleInfoServiceImpl implements ScheduleInfoService {
 
     @Override
     public Map<String, ArrayList<ScheduleInfoDto>> getScheduleInfo(ScheduleInfoQueryDto queryDto) {
-        GdutDayCookieJar gdutDayCookieJar = new GdutDayCookieJar();
-        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient(gdutDayCookieJar);
+//        GdutDayCookieJar gdutDayCookieJar = new GdutDayCookieJar();
+        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient();
         Integer termId = 0;
         if (queryDto.getUserType().equals(RoleConstant.UNDER_GRADUATE)) {
 

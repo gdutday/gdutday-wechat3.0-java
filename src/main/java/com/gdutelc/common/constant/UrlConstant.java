@@ -25,9 +25,9 @@ public class UrlConstant {
 
     public static final String GRADUATE_EHALL_SCORE_LOGIN="https://ehall.gdut.edu.cn/gsapp/sys/wdcjapp/*default/index.do#/wdcj";
     // 研究生学期信息
-    public static final String GRADUATE_SEMESTER = "http://ehall.gdut.edu.cn/gsapp/sys/wdkbapp/modules/xskcb/kfdxnxqcx.do";
+    public static final String GRADUATE_SEMESTER = "https://ehall.gdut.edu.cn/gsapp/sys/wdkbapp/modules/xskcb/kfdxnxqcx.do";
     // 研究生课表接口，需要先拿到学期信息
-    public static final String GRADUATE_KB = "http://ehall.gdut.edu.cn/gsapp/sys/wdkbapp/modules/xskcb/xspkjgcx.do?XNXQDM=20221&*order=<*order>";
+    public static final String GRADUATE_KB = "https://ehall.gdut.edu.cn/gsapp/sys/wdkbapp/modules/xskcb/xspkjgcx.do?XNXQDM=20221&*order=<*order>";
     // 考试成绩
     public static final String GRADUATE_EXAM = "https://ehall.gdut.edu.cn/gsapp/sys/wdcjapp/modules/wdcj/xscjcx.do";
 
@@ -35,7 +35,7 @@ public class UrlConstant {
     public static final String JXFW_LOGIN = "https://jxfw.gdut.edu.cn/new/login";
 
     // 从ehall 获得用户个人信息，用来测试是否登录成功
-    public static final String GRADUATE_USER_INFO = "http://ehall.gdut.edu.cn/gsapp/sys/wdkbapp/wdkcb/initXsxx.do?XH=";
+    public static final String GRADUATE_USER_INFO = "https://ehall.gdut.edu.cn/gsapp/sys/wdkbapp/wdkcb/initXsxx.do?XH=";
 
 
     // 登录ehall大厅 pre登录
