@@ -101,8 +101,7 @@ public class GdutDayServiceImpl implements GdutDayService {
      */
     @Override
     public UserInfoDto getUserInfo(String cookies, Integer userType) {
-        GdutDayCookieJar gdutDayCookieJar = new GdutDayCookieJar();
-        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient(gdutDayCookieJar);
+        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient();
         String url = null;
         if (userType == RoleConstant.GRADUATE) {
             url = UrlConstant.GRADUATE_USER_INFO;
@@ -122,8 +121,8 @@ public class GdutDayServiceImpl implements GdutDayService {
      */
     @Override
     public Map<String, ArrayList<ScheduleInfoDto>> getScheduleInfo(ScheduleInfoQueryDto queryDto) {
-        GdutDayCookieJar gdutDayCookieJar = new GdutDayCookieJar();
-        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient(gdutDayCookieJar);
+//        GdutDayCookieJar gdutDayCookieJar = new GdutDayCookieJar();
+        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient();
         if (queryDto.getUserType().equals(UNDER_GRADUATE)) {
             // 学期转换，见注释
             Integer termId = (queryDto.getTermId() / 10) * 100 + queryDto.getTermId() % 10;
@@ -376,8 +375,8 @@ public class GdutDayServiceImpl implements GdutDayService {
 
     @Override
     public VerCodeDto sendVerification(String jSessionId) {
-        GdutDayCookieJar gdutDayCookieJar = new GdutDayCookieJar();
-        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient(gdutDayCookieJar);
+//        GdutDayCookieJar gdutDayCookieJar = new GdutDayCookieJar();
+        OkHttpClient okHttpClient = okHttpUtils.makeOkhttpClient();
         Response response = null;
         if (StringUtils.isEmpty(jSessionId)) {
             response = okHttpUtils.get(okHttpClient, "https://jxfw.gdut.edu.cn/yzm" + "?d=" + System.currentTimeMillis());
