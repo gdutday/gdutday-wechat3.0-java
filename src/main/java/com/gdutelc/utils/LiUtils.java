@@ -201,7 +201,7 @@ public class LiUtils {
      * @throws Exception 异常信息
      */
     public static String aes256ECBPkcs7PaddingEncrypt(String str, String key) throws Exception {
-        Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+        Cipher cipher = Cipher.getInstance(ECB_ALGORITHM);
         byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
         cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(keyBytes, SECRET));
         byte[] doFinal = cipher.doFinal(str.getBytes(StandardCharsets.UTF_8));
