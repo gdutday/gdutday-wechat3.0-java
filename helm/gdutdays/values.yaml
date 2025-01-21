@@ -9,10 +9,15 @@ nameOverride: ""
 fullnameOverride: ""
 
 service:
-  type: ClusterIP
-  port: 80
-  targetPort: 8080  # 更新 targetPort 为 1880
-  nodePort: 31880 # 可选，如果需要指定 NodePort
+  type: NodePort
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      nodePort: 31880
+    - name: metrics
+      port: 8092
+      targetPort: 8092
 
 ingress:
   enabled: false
@@ -30,6 +35,22 @@ ingress:
     - secretName: gdutdays-tls
       hosts:
         - gdutdays.gdutelc.com
+
+# ServiceMonitor 配置
+serviceMonitor:
+  enabled: true
+  # namespace: monitoring  # 根据您的实际情况
+  interval: 30s
+  scrapeTimeout: 10s
+  path: /actuator/prometheus  # 添加此行，指定监控路径
+  labels: {}
+  annotations: {}
+  metricRelabelings: []
+  relabelings: []
+  honorLabels: false
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gdutday4
 
 resources: {}
 

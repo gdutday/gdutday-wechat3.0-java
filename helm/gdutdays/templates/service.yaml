@@ -7,12 +7,14 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: {{ .Values.service.targetPort }}
+    {{- range .Values.service.ports }}
+    - name: {{ .name }}
       protocol: TCP
-      name: http
-      {{- if and (eq .Values.service.type "NodePort") (.Values.service.nodePort) }}
-      nodePort: {{ .Values.service.nodePort }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+      {{- if and (eq $.Values.service.type "NodePort") (defined .nodePort) }}
+      nodePort: {{ .nodePort }}
       {{- end }}
+    {{- end }}
   selector:
     {{- include "gdutdays4.selectorLabels" . | nindent 4 }}
