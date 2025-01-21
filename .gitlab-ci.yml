@@ -203,6 +203,8 @@ helm-build:
   artifacts:
     reports:
       dotenv: build.env
+  only:
+    - dev
 
 #helm-build:
 #  image: ubuntu:20.04
