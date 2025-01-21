@@ -12,7 +12,7 @@ spec:
       protocol: TCP
       port: {{ .port }}
       targetPort: {{ .targetPort }}
-      {{- if and (eq $.Values.service.type "NodePort") (defined .nodePort) }}
+      {{- if and (eq $.Values.service.type "NodePort") (ne .nodePort nil) }}
       nodePort: {{ .nodePort }}
       {{- end }}
     {{- end }}

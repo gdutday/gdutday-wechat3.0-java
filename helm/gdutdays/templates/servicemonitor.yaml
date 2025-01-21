@@ -2,17 +2,16 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "gdutday4.fullname" . }}
+  name: {{ include "gdutdays4.fullname" . }}
   labels:
-    {{- include "gdutday4.labels" . | nindent 4 }}
-    {{- toYaml .Values.serviceMonitor.labels | nindent 4 }}
+    {{- include "gdutdays4.labels" . | nindent 4 }}
 spec:
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}
   selector:
     matchLabels:
-      {{- include "gdutday4.selectorLabels" . | nindent 6 }}
+      {{- include "gdutdays4.selectorLabels" . | nindent 6 }}
   endpoints:
     - port: metrics
       {{- if .Values.serviceMonitor.path }}
