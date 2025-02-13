@@ -7,7 +7,7 @@ gdutday:
   # 版权年份
   copyrightYear: 2024
   #开学日期
-  admissionDate: "2025-2-24"
+  admissionDate: "2025.2.24"
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
