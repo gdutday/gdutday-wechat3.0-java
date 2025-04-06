@@ -2,6 +2,7 @@
 
 GDUTDays/日在广工Plus，本小程序为gdutday小程序的3.0后端，为各位同学提供绩点查询，课程查询等功能。非学校官方小程序。
 
+前端地址: https://github.com/gdutday/gdutday-wechat-2.0
 
 ## Java Version
 `17`
