@@ -8,6 +8,8 @@ gdutday:
   copyrightYear: 2024
   #开学日期
   admissionDate: "2025.2.24"
+  # 加密用密钥（一定要16位）
+  secret: ${GDUTDAY_SECRET:changemechangeme}
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
