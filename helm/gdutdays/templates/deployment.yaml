@@ -26,6 +26,11 @@ spec:
             {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            {{- if .Values.gdutdays.secret }}
+            - name: GDUTDAY_SECRET
+              value: "{{ .Values.gdutdays.secret }}"
+            {{- end }}
       nodeSelector:
         {{- toYaml .Values.nodeSelector | nindent 8 }}
       tolerations:

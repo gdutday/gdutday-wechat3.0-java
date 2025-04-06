@@ -8,6 +8,10 @@ image:
 nameOverride: ""
 fullnameOverride: ""
 
+# 16位字符串私钥
+gdutdays:
+  secret: "changemechangeme"
+
 service:
   type: NodePort
   ports:
