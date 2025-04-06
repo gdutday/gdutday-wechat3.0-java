@@ -8,9 +8,13 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -31,6 +35,8 @@ import java.util.Hashtable;
  * @since 2023/9/29 01:05
  * LiUtil
  */
+@Component
+@Slf4j
 public class LiUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiUtils.class);
@@ -43,11 +49,24 @@ public class LiUtils {
 
     private static final String ECB_ALGORITHM = "AES/ECB/PKCS7Padding";
 
-    private static final String SECRET = "rYnZ5jv7rLfsnd96";
+    // Deprecated secret
+    //private static final String SECRET = "rYnZ5jv7rLfsnd96";
 
+    /**
+     * AES/CBC/PKCS5Padding Secret
+     */
+    @Value(value = "${gdutday.secret}")
+    private String secret;
+
+    private static String secretKey;
 
     static {
         Security.addProvider(new BouncyCastleProvider());
+    }
+
+    @PostConstruct
+    public void init() {
+        secretKey = secret;
     }
 
     /**
@@ -203,7 +222,7 @@ public class LiUtils {
     public static String aes256ECBPkcs7PaddingEncrypt(String str, String key) throws Exception {
         Cipher cipher = Cipher.getInstance(ECB_ALGORITHM);
         byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
-        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(keyBytes, SECRET));
+        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(keyBytes, secretKey));
         byte[] doFinal = cipher.doFinal(str.getBytes(StandardCharsets.UTF_8));
         return new String(Base64.getEncoder().encode(doFinal));
     }
@@ -213,7 +232,7 @@ public class LiUtils {
         if (StringUtils.isEmpty(str)) {
             throw new ServiceException("账号或密码错误！", 4005);
         }
-        return LiUtils.aes256ECBPkcs7PaddingDecrypt(str, SECRET);
+        return LiUtils.aes256ECBPkcs7PaddingDecrypt(str, secretKey);
     }
 
     /**
@@ -229,7 +248,7 @@ public class LiUtils {
             Cipher cipher = Cipher.getInstance(ECB_ALGORITHM);
             byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
             // 用来填充的东西
-            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(keyBytes, SECRET));
+            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(keyBytes, secretKey));
             byte[] doFinal = cipher.doFinal(Base64.getDecoder().decode(str));
             return new String(doFinal);
         } catch (Exception e) {
