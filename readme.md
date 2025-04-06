@@ -9,7 +9,7 @@ GDUTDays/日在广工Plus，本小程序为gdutday小程序的3.0后端，为各
 `3.1.4`
 ## How To Run
 1. `mvn clean package -DskipTests=true`
-2. `export GDUTDAYS_SECRET='changemechangeme`
+2. `export GDUTDAYS_SECRET='changemechangeme'`
 3. `java --jar target/gdutday-wechat3-java-0.0.1-SNAPSHOT.jar`
 
 
