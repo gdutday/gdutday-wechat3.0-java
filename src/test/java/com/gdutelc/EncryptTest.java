@@ -5,11 +5,13 @@ package com.gdutelc;
 
 import com.gdutelc.utils.LiUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+@SpringBootTest
 public class EncryptTest {
 
     public static String password;
