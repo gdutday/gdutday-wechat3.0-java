@@ -94,12 +94,17 @@ public class ExamScoreServiceImpl implements ExamScoreService {
             if(examScoreDto.getCourseName().equals("劳动教育")){
                 //20240814 修复劳动教育成绩显示问题，问题原因xnxqdm为空时，劳动教育不显示成绩，是教务处的问题
                 //但我们还是抹平教务处的问题。。。
-                paramMap.put("xnxqdm", "202302");
+
+                //20250630 修复劳动教育成绩错误问题，原因：
+                // 第一次修复时，没有设置当前学期的xnxqdm,而且把所有当前学期的其他课的成绩都set到劳动教育的结果对象里了
+                paramMap.put("xnxqdm", jsonObject.getString("xnxqdm"));
                 JSONArray rows1 = getRows(okHttpClient, url, paramMap, cookies);
                 for(int j = 0;j<rows1.size();j++){
                     JSONObject object = rows1.getJSONObject(j);
-                    examScoreDto.setGpa(object.getString("cjjd"));
-                    examScoreDto.setResult(object.getString("zcj"));
+                    if (object.getString("kcmc").equals("劳动教育")) {
+                        examScoreDto.setGpa(object.getString("cjjd"));
+                        examScoreDto.setResult(object.getString("zcj"));
+                    }
                 }
             }
             result.get(term).add(examScoreDto);
