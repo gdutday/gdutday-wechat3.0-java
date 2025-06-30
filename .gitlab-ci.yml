@@ -389,7 +389,7 @@ docker-deploy:
     - echo "============================= REMOVE OLD IMAGE ============================="
     - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker rmi ${OLD_IMAGE_INFO}" || true
     - echo "=========================== DEPLOY NEW CONTAINER ==========================="
-    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker run -d  -p 1888:8080 --name gdutdays4 --restart=always ${HARBORHOST}/gdutdays/gdutdays:latest"
+    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker run -d  -p 1888:8080 -e GDUTDAY_SECRET='${GDUTDAY_SECRET}' --name gdutdays4 --restart=always ${HARBORHOST}/gdutdays/gdutdays:latest"
   only:
     - dev
 
@@ -412,7 +412,10 @@ helm-deploy:
     - helm registry login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
     - echo "============================= PULL NEW IMAGE ==============================="
     - helm pull oci://${HARBORHOST}/gdutdays/gdutdays-helm --version ${BIG_VERSION}-$(echo $COMMIT_TIME) --untar
+    - echo "======================== LOAD HELM CONFIGURATION ==========================="
+    - rm ./gdutdays-helm/values.yaml
+    - echo $VALUES_BASE64 | base64 -d > ./gdutdays-helm/values.yaml
     - echo "=========================== DEPLOY NEW VERSION ============================="
-    - helm upgrade --install gdutdays4 ./gdutdays-helm --namespace gdutdays --set image.tag=${BIG_VERSION}-$(echo $COMMIT_TIME) --set service.type=NodePort --set service.nodePort=31880
+    - helm upgrade --install gdutdays4 ./gdutdays-helm --namespace gdutdays --set image.tag=${BIG_VERSION}-$(echo $COMMIT_TIME)
   only:
     - dev
