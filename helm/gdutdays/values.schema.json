@@ -1,0 +1,290 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "https://github.com/gdutelc/gdutdays/helm/gdutdays/values.schema.json",
+  "type": "object",
+  "title": "GdutDays Helm Chart Values Schema",
+  "properties": {
+    "replicaCount": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of replicas for the deployment",
+      "default": 1
+    },
+    "image": {
+      "type": "object",
+      "description": "Container image configuration",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "description": "Image repository URL",
+          "default": "registry.gdutnic.com/gdutdays/gdutdays"
+        },
+        "tag": {
+          "type": "string",
+          "description": "Image tag",
+          "default": "latest"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "enum": ["Always", "Never", "IfNotPresent"],
+          "description": "Image pull policy",
+          "default": "IfNotPresent"
+        }
+      },
+      "required": ["repository", "tag", "pullPolicy"]
+    },
+    "nameOverride": {
+      "type": "string",
+      "description": "Override the default resource name prefix",
+      "default": ""
+    },
+    "fullnameOverride": {
+      "type": "string",
+      "description": "Override the full resource names",
+      "default": ""
+    },
+    "gdutdays": {
+      "type": "object",
+      "description": "GdutDays application configuration",
+      "properties": {
+        "secret": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 16,
+          "description": "16-character private key string for encryption"
+        }
+      },
+      "required": ["secret"]
+    },
+    "service": {
+      "type": "object",
+      "description": "Kubernetes service configuration",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["ClusterIP", "NodePort", "LoadBalancer", "ExternalName"],
+          "description": "Kubernetes service type",
+          "default": "NodePort"
+        },
+        "ports": {
+          "type": "array",
+          "description": "Service ports configuration",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Port name"
+              },
+              "port": {
+                "type": "integer",
+                "description": "Service port number"
+              },
+              "targetPort": {
+                "type": ["integer", "string"],
+                "description": "Target port on the container"
+              },
+              "nodePort": {
+                "type": "integer",
+                "description": "Node port number (for NodePort service type)"
+              },
+              "protocol": {
+                "type": "string",
+                "enum": ["TCP", "UDP", "SCTP"],
+                "description": "Port protocol",
+                "default": "TCP"
+              }
+            },
+            "required": ["name", "port", "targetPort"]
+          }
+        }
+      },
+      "required": ["type", "ports"]
+    },
+    "ingress": {
+      "type": "object",
+      "description": "Ingress configuration for external access",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable or disable ingress",
+          "default": false
+        },
+        "className": {
+          "type": "string",
+          "description": "Ingress controller class name",
+          "default": "nginx"
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Ingress annotations",
+          "properties": {
+            "nginx.ingress.kubernetes.io/server-tokens": {
+              "type": "string",
+              "description": "Controls the Server header in HTTP responses"
+            },
+            "nginx.ingress.kubernetes.io/use-regex": {
+              "type": "string",
+              "description": "Enable regex pattern matching for paths"
+            },
+            "nginx.ingress.kubernetes.io/rewrite-target": {
+              "type": "string",
+              "description": "Target path for URL rewriting"
+            }
+          }
+        },
+        "hosts": {
+          "type": "array",
+          "description": "Ingress hosts configuration",
+          "items": {
+            "type": "object",
+            "properties": {
+              "host": {
+                "type": "string",
+                "format": "hostname",
+                "description": "Hostname for the ingress"
+              },
+              "paths": {
+                "type": "array",
+                "description": "Paths for the ingress host",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "URL path"
+                    },
+                    "pathType": {
+                      "type": "string",
+                      "enum": ["ImplementationSpecific", "Prefix", "Exact"],
+                      "description": "Path matching type"
+                    }
+                  },
+                  "required": ["path", "pathType"]
+                }
+              }
+            },
+            "required": ["host", "paths"]
+          }
+        },
+        "tls": {
+          "type": "array",
+          "description": "TLS configuration for the ingress",
+          "items": {
+            "type": "object",
+            "properties": {
+              "secretName": {
+                "type": "string",
+                "description": "Name of the TLS secret"
+              },
+              "hosts": {
+                "type": "array",
+                "description": "Hostnames included in the TLS certificate",
+                "items": {
+                  "type": "string",
+                  "format": "hostname"
+                }
+              }
+            },
+            "required": ["secretName", "hosts"]
+          }
+        }
+      },
+      "required": ["enabled"]
+    },
+    "serviceMonitor": {
+      "type": "object",
+      "description": "Prometheus ServiceMonitor configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable or disable ServiceMonitor",
+          "default": true
+        },
+        "interval": {
+          "type": "string",
+          "pattern": "^([0-9]+(\\.[0-9]+)?(ms|s|m|h))$",
+          "description": "Scraping interval for metrics",
+          "default": "30s"
+        },
+        "scrapeTimeout": {
+          "type": "string",
+          "pattern": "^([0-9]+(\\.[0-9]+)?(ms|s|m|h))$",
+          "description": "Timeout for scraping metrics",
+          "default": "10s"
+        },
+        "path": {
+          "type": "string",
+          "description": "Path to scrape metrics from",
+          "default": "/actuator/prometheus"
+        },
+        "labels": {
+          "type": "object",
+          "description": "Additional labels for the ServiceMonitor"
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Annotations for the ServiceMonitor"
+        },
+        "metricRelabelings": {
+          "type": "array",
+          "description": "Metric relabeling configurations"
+        },
+        "relabelings": {
+          "type": "array",
+          "description": "Relabeling configurations"
+        },
+        "honorLabels": {
+          "type": "boolean",
+          "description": "Honor labels from the target",
+          "default": false
+        },
+        "selector": {
+          "type": "object",
+          "description": "Selector for the ServiceMonitor",
+          "properties": {
+            "matchLabels": {
+              "type": "object",
+              "description": "Labels to match services"
+            }
+          }
+        }
+      },
+      "required": ["enabled"]
+    },
+    "resources": {
+      "type": "object",
+      "description": "Compute resources for the container",
+      "properties": {
+        "limits": {
+          "type": "object",
+          "description": "Resource limits for the container"
+        },
+        "requests": {
+          "type": "object",
+          "description": "Resource requests for the container"
+        }
+      }
+    },
+    "nodeSelector": {
+      "type": "object",
+      "description": "Node labels for pod assignment"
+    },
+    "tolerations": {
+      "type": "array",
+      "description": "Tolerations for pod assignment"
+    },
+    "affinity": {
+      "type": "object",
+      "description": "Affinity rules for pod assignment"
+    }
+  },
+  "required": [
+    "replicaCount",
+    "image",
+    "gdutdays",
+    "service",
+    "ingress",
+    "serviceMonitor"
+  ]
+}
