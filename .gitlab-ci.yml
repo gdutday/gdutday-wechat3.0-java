@@ -196,6 +196,8 @@ helm-build:
     - echo "COMMIT_TIME=${COMMIT_TIME}"
     - echo "============================= LOGIN TO HARBOR =============================="
     - helm registry login ${HARBORHOST} --username ${USERNAME} --password ${PASSWORD}
+    - echo "============================ CPOY README FILES ============================="
+    - cp readme.md helm/gdutdays/README.md
     - echo "============================== PACKAGE CHART ==============================="
     - helm package helm/gdutdays --version ${BIG_VERSION}-$(echo $COMMIT_TIME)
     - echo "=============================== PUSH CHARTS ================================"
@@ -389,7 +391,7 @@ docker-deploy:
     - echo "============================= REMOVE OLD IMAGE ============================="
     - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker rmi ${OLD_IMAGE_INFO}" || true
     - echo "=========================== DEPLOY NEW CONTAINER ==========================="
-    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker run -d  -p 1888:8080 -e GDUTDAY_SECRET=${GDUTDAY_SECRET} --name gdutdays4 --restart=always ${HARBORHOST}/gdutdays/gdutdays:latest"
+    - ssh ${SERVER_USERNAME}@${SERVER_HOST} "docker run -d -p 1888:8080 -e GDUTDAY_SECRET=${GDUTDAY_SECRET} --name gdutdays4 --restart=always ${HARBORHOST}/gdutdays/gdutdays:latest"
   only:
     - dev
 
