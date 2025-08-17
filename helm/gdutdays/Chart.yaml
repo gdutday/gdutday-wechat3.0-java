@@ -15,3 +15,10 @@ maintainers:
 sources:
   - https://github.com/gdutday/gdutday-wechat3.0-java
   - https://git.gdutnic.com/gregPerlinLi/gdutdays
+annotations:
+  artifacthub.io/links: |
+    - name: support
+      url: https://github.com/gdutday/gdutday-wechat3.0-java/issues
+  artifacthub.io/screenshots: |
+    - title: gdutdays
+      url: https://cn-gz-1.minio.gdutnic.com/gdutnic/public/gdutdays/logo.jpg
