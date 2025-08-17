@@ -196,8 +196,8 @@ helm-build:
     - echo "COMMIT_TIME=${COMMIT_TIME}"
     - echo "============================= LOGIN TO HARBOR =============================="
     - helm registry login ${HARBORHOST} --username ${USERNAME} --password ${PASSWORD}
-    - echo "============================ CPOY README FILES ============================="
-    - cp readme.md helm/gdutdays/README.md
+    #- echo "============================ CPOY README FILES ============================="
+    #- cp readme.md helm/gdutdays/README.md
     - echo "============================== PACKAGE CHART ==============================="
     - helm package helm/gdutdays --version ${BIG_VERSION}-$(echo $COMMIT_TIME)
     - echo "=============================== PUSH CHARTS ================================"
