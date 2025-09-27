@@ -146,7 +146,6 @@ public abstract class AbstractLoginAdapter implements LoginService {
                 // 课表应用
                 this.postLoginByUrl(UrlConstant.GRADUATE_KB_LOGIN, myokHttpClient);
 
-                return new LoginDto(cookieStr, userType);
             } else if (userType == TEACHER) {
                 this.postLoginByUrl(UrlConstant.TEACHER__EHALL_LOGIN, myokHttpClient);
             }
