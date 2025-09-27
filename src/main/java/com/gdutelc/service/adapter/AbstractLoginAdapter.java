@@ -89,7 +89,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
             JSONObject object;
             if (response1.code() != 200 || response1.body() == null) {
                 log.error("统一认证滑块链接请求异常");
-                throw new ServiceException("网络请求异常，请重试！",HttpStatus.f5001);
+                throw new ServiceException("网络请求异常，请重试！", HttpStatus.f5001);
             }
             object = JSONObject.parseObject(response1.body().string());
             boolean isNeed = (boolean) object.get("isNeed");
@@ -100,7 +100,7 @@ public abstract class AbstractLoginAdapter implements LoginService {
                 return false;
             }
         } catch (IOException e) {
-            throw new ServiceException("网络请求异常，请重试！",HttpStatus.f5001);
+            throw new ServiceException("网络请求异常，请重试！", HttpStatus.f5001);
         }
     }
 
@@ -135,18 +135,22 @@ public abstract class AbstractLoginAdapter implements LoginService {
                 // 修改回自动重定向地址，便于系统自动重新认证
                 myokHttpClient = okHttpUtils.makeOkhttpClientAuto(cookieJar);
                 this.postLoginByUrl(UNDER_GRADUATE_LOGIN, myokHttpClient);
-                cookieStr = OkHttpUtils.getCookies(cookieJar.cookies);
             } else if (userType == GRADUATE) {
+                // 研究生修改域名，需要和本科生一样利用302跳转登录
+                myokHttpClient = okHttpUtils.makeOkhttpClientAuto(cookieJar);
                 // 研究生登录，传入研究生登录地址
                 this.postLoginByUrl(UrlConstant.GRADUATE_EHALL_LOGIN, myokHttpClient);
-                // 认证成绩系统
+
+                // 认证成绩系统 此后研究的每个应用都需要单独授权过认证，找到接口header里面的Referer，请求下
                 this.postLoginByUrl(UrlConstant.GRADUATE_EHALL_SCORE_LOGIN, myokHttpClient);
-                cookieStr = OkHttpUtils.getCookieRemoveShortWEU(cookieJar.cookies);
+                // 课表应用
+                this.postLoginByUrl(UrlConstant.GRADUATE_KB_LOGIN, myokHttpClient);
+
                 return new LoginDto(cookieStr, userType);
             } else if (userType == TEACHER) {
                 this.postLoginByUrl(UrlConstant.TEACHER__EHALL_LOGIN, myokHttpClient);
-                cookieStr = OkHttpUtils.getCookies(cookieJar.cookies);
             }
+            cookieStr = OkHttpUtils.getCookies(cookieJar.cookies);
             return new LoginDto(cookieStr, userType);
         } catch (IOException e) {
             throw new ServiceException("网络请求异常，请重试！", HttpStatus.f5001);

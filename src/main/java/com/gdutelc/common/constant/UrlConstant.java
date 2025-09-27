@@ -20,16 +20,24 @@ public class UrlConstant {
     // 本科生获得成绩接口
     public static final String UNDER_EXAME_SCORE = "https://jxfw.gdut.edu.cn/xskccjxx!getDataList.action";
     public static final String UNDER_REFER = "https://jxfw.gdut.edu.cn/";
-    // 研究生登录链接
-    public static final String GRADUATE_EHALL_LOGIN = "https://ehall.gdut.edu.cn/gsapp/sys/wdkbapp/*default/index.do?amp_sec_version_=1&gid_=anF6SjBZK2R1WVVlQ2l5cjJRSlBlckVnR05sSFVYRlVRWHVEYTVpT01WQ3Z0M01ENktsWXA5cHoveWxwNTdaSU9PMVRjWTF1Wk90Y3g4QjVOb3VhbWc9PQ&EMAP_LANG=zh&THEME=golden#/xskcb";
 
-    public static final String GRADUATE_EHALL_SCORE_LOGIN="https://ehall.gdut.edu.cn/gsapp/sys/wdcjapp/*default/index.do#/wdcj";
+    //    public static final String GRADUATE_REFER = "https://yjsxt.gdut.edu.cn/";
+    // 研究生登录链接
+    public static final String GRADUATE_EHALL_LOGIN = "https://authserver.gdut.edu.cn/authserver/login?service=https%3A%2F%2Fyjsxt.gdut.edu.cn%2Fgsapp%2Fsys%2Fyjsemaphome%2Fportal%2Findex.do";
+
+    // 成绩登录授权
+    public static final String GRADUATE_EHALL_SCORE_LOGIN = "https://yjsxt.gdut.edu.cn/gsapp/sys/wdcjapp/*default/index.do#/wdcj";
+
+    // 课表登录授权
+    public static  final  String GRADUATE_KB_LOGIN = "https://yjsxt.gdut.edu.cn/gsapp/sys/wdkbapp/*default/index.do";
     // 研究生学期信息
-    public static final String GRADUATE_SEMESTER = "https://ehall.gdut.edu.cn/gsapp/sys/wdkbapp/modules/xskcb/kfdxnxqcx.do";
+    public static final String GRADUATE_SEMESTER = "https://yjsxt.gdut.edu.cn/gsapp/sys/wdkbapp/modules/xskcb/kfdxnxqcx.do";
+
     // 研究生课表接口，需要先拿到学期信息
-    public static final String GRADUATE_KB = "https://ehall.gdut.edu.cn/gsapp/sys/wdkbapp/modules/xskcb/xspkjgcx.do?XNXQDM=20221&*order=<*order>";
+    public static final String GRADUATE_KB = "https://yjsxt.gdut.edu.cn/gsapp/sys/wdkbapp/modules/xskcb/xspkjgcx.do?XNXQDM=20221&*order=<*order>";
     // 考试成绩
-    public static final String GRADUATE_EXAM = "https://ehall.gdut.edu.cn/gsapp/sys/wdcjapp/modules/wdcj/xscjcx.do";
+    public static final String GRADUATE_EXAM = "https://yjsxt.gdut.edu.cn/gsapp/sys/wdcjapp/modules/wdcj/xscjcx.do";
+
 
     // 本科教务系统登录
     public static final String JXFW_LOGIN = "https://jxfw.gdut.edu.cn/new/login";

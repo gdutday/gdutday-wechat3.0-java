@@ -133,6 +133,9 @@ public class LoginServiceImpl extends AbstractLoginAdapter {
             if (response.code() != 200) {
                 throw new ServiceException("登录异常，请重新登录！", HttpStatus.f003);
             }
+            if (response.body() != null) {
+                response.body().close();
+            }
         } catch (ServiceException e) {
             throw new ServiceException("登录异常，请重新登录！", HttpStatus.f003);
         } catch (Exception e) {
