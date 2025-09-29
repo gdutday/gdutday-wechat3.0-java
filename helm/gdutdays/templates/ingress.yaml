@@ -23,8 +23,8 @@ spec:
               service:
                 name: {{ include "gdutdays4.fullname" $ }}
                 port:
-                  number: {{ $.Values.service.port }}
-          {{- end }}
+                  number: {{ range $.Values.service.ports }}{{ if eq .name "http" }}{{ .port }}{{end}}{{end}}
+          {{- end}}
     {{- end }}
   tls:
     {{- range .Values.ingress.tls }}

@@ -7,7 +7,7 @@ gdutday:
   # 版权年份
   copyrightYear: 2024
   # 默认开学时间
-  admissionDate: "2025.2.24"
+  admissionDate: "2025.9.1"
   # 加密用密钥（一定要16位）
   secret: ${GDUTDAY_SECRET:changemechangeme}
 
