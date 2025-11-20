@@ -1,4 +1,4 @@
-FROM registry.gdut.edu.cn/docker/library/openjdk:17-oracle
+FROM registry.gdut.edu.cn/docker/library/eclipse-temurin:17-jre
 ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} app.jar
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone
