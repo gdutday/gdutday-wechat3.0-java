@@ -152,7 +152,7 @@ maven-build:main:
 #    - dev
 
 docker-build-and-push:
-  image: registry.gdut.edu.cn/docker/library/docker:stable
+  image: registry.gdut.edu.cn/docker/library/docker:24-cli
   stage: image-build
   tags:
     - Docker
