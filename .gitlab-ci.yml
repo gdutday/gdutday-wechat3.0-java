@@ -158,21 +158,36 @@ docker-build-and-push:
     - Docker
   services:
     - name: docker:stable
+  before_script:
+    - echo "======================== SETUP BUILDX ENVIRONMENT =========================="
+    - docker info
+    - apk add --no-cache git
+    # 创建并使用 buildx builder
+    - docker buildx create --use --name multiarch-builder --driver docker-container --platform linux/amd64,linux/arm64,linux/arm/v7 --bootstrap || docker buildx use multiarch-builder
+    - docker buildx inspect --bootstrap
   script:
     - echo "================================= LOAD ENV ================================="
     - env
     - echo "COMMIT_TIME=${COMMIT_TIME}"
     - echo "============================= LOGIN TO HARBOR =============================="
     - docker login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
-    - echo "=========================== BUILD DOCKER IMAGES ============================"
-    - docker build -t ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME) .
-    - echo "========================== TAG IMAGES WITH LATEST =========================="
-    - docker tag ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME) ${HARBORHOST}/gdutdays/gdutdays:latest
-    - echo "========================== PUSH IMAGES TO HARBOR ==========================="
-    - docker push ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME)
-    - docker push ${HARBORHOST}/gdutdays/gdutdays:latest
-    - echo "============================= CLEAN UP MIRRORS ============================="
-    - docker rmi ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    # - echo "=========================== BUILD DOCKER IMAGES ============================"
+    # - docker build -t ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME) .
+    # - echo "========================== TAG IMAGES WITH LATEST =========================="
+    # - docker tag ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME) ${HARBORHOST}/gdutdays/gdutdays:latest
+    # - echo "========================== PUSH IMAGES TO HARBOR ==========================="
+    # - docker push ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    # - docker push ${HARBORHOST}/gdutdays/gdutdays:latest
+    - echo "======================= BUILD AND PUSH DOCKER IMAGES ======================="
+      - |
+      docker buildx build \
+      --platform linux/amd64,linux/arm64 \
+      --tag ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME) \
+      --tag ${HARBORHOST}/gdutdays/gdutdays:latest \
+      --push \
+      .
+    # - echo "============================= CLEAN UP MIRRORS ============================="
+    # - docker rmi ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME)
     - echo "============================ EXPORT IMAGE TAGS ============================="
     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
   artifacts:
@@ -311,6 +326,9 @@ image-sign:
     - cosign sign --key cosign.key ${HARBORHOST}/gdutdays/gdutdays:latest
     - echo "================================ CHART SIGN ================================"
     - cosign sign --key cosign.key $HARBORHOST/gdutdays/gdutdays-helm:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    - echo "========================== FIX FILE PERMISSIONS ============================"
+    - chmod 644 cosign.key cosign.pub
+    - ls -la cosign.*
     - echo "================================ EXPORT KEY ================================"
     - echo "The Password of the key is Harbor account's password, the key will reserved for 30 minutes."
     - echo "COMMIT_TIME=${COMMIT_TIME}" >> build.env
