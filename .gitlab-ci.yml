@@ -157,13 +157,13 @@ docker-build-and-push:
   tags:
     - Docker
   services:
-    - name: docker:stable
+    - name: registry.gdut.edu.cn/docker/library/docker:24-cli
   before_script:
     - echo "======================== SETUP BUILDX ENVIRONMENT =========================="
     - docker info
     - apk add --no-cache git
     # 创建并使用 buildx builder
-    - docker buildx create --use --name multiarch-builder --driver docker-container --platform linux/amd64,linux/arm64,linux/arm/v7 --bootstrap || docker buildx use multiarch-builder
+    - docker buildx create --use --name multiarch-builder --driver docker-container --platform linux/amd64,linux/arm64,linux/arm/v5,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/riscv64,linux/s390x,linux/mips64le --bootstrap || docker buildx use multiarch-builder
     - docker buildx inspect --bootstrap
   script:
     - echo "================================= LOAD ENV ================================="
@@ -181,7 +181,7 @@ docker-build-and-push:
     - echo "======================= BUILD AND PUSH DOCKER IMAGES ======================="
     - |
       docker buildx build \
-      --platform linux/amd64,linux/arm64 \
+      --platform linux/amd64,linux/arm64,linux/ppc64le,linux/s390x \
       --tag ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME) \
       --tag ${HARBORHOST}/gdutdays/gdutdays:latest \
       --push \
@@ -306,8 +306,8 @@ image-sign:
       deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
       deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse' > /etc/apt/sources.list
     - apt update -y
-    - echo "=============================== INSTALL CURL ==============================="
-    - apt install curl -y
+    - echo "======================== INSTALL REQUIRED TOOLS ============================"
+    - apt install curl jq skopeo -y
   script:
     - echo "================================= LOAD ENV ================================="
     - env
@@ -322,8 +322,38 @@ image-sign:
     - cosign generate-key-pair
     - echo "============================= LOGIN TO HARBOR =============================="
     - cosign login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
-    - echo "=============================== IMAGE SIGN ================================="
+    - echo "==================== EXTRACT ARCHITECTURE DIGESTS ========================="
+    # 使用 skopeo 获取镜像 manifest 信息
+    - |
+      echo "Fetching manifest for ${HARBORHOST}/gdutdays/gdutdays:latest"
+      skopeo inspect --raw docker://${HARBORHOST}/gdutdays/gdutdays:latest > manifest.json
+      
+      # 解析 manifest，提取每个架构的 digest
+      cat manifest.json | jq -r '
+        if .manifests then
+          .manifests[] | "\(.platform.architecture):\(.digest)"
+        else
+          "single-arch:\(.config.digest // "unknown")"
+        end
+      ' > arch_digests.txt
+      
+      echo "Architecture digests:"
+      cat arch_digests.txt
+    - echo "===================== SIGN EACH ARCHITECTURE IMAGE ========================"
+    # 签名 manifest list (整体镜像)
+    - echo "Signing manifest list for latest tag..."
     - cosign sign --key cosign.key ${HARBORHOST}/gdutdays/gdutdays:latest
+    # 签名每个架构的镜像
+    - |
+      echo "Signing individual architecture images..."
+      while IFS=: read -r arch digest; do
+        if [ "$arch" != "single-arch" ] && [ -n "$digest" ]; then
+          echo "Signing $arch architecture with digest: $digest"
+          cosign sign --key cosign.key ${HARBORHOST}/gdutdays/gdutdays@${digest}
+        else
+          echo "Skipping single-arch or empty digest"
+        fi
+      done < arch_digests.txt
     - echo "================================ CHART SIGN ================================"
     - cosign sign --key cosign.key $HARBORHOST/gdutdays/gdutdays-helm:${BIG_VERSION}-$(echo $COMMIT_TIME)
     - echo "========================== FIX FILE PERMISSIONS ============================"
@@ -336,6 +366,10 @@ image-sign:
     paths:
       - cosign.key
       - cosign.pub
+      - arch_digests.txt
+      - arch_digests_versioned.txt
+      - manifest.json
+      - manifest_versioned.json
     reports:
       dotenv: build.env
     expire_in: 30 min
