@@ -190,6 +190,9 @@ docker-build-and-push:
     # - docker rmi ${HARBORHOST}/gdutdays/gdutdays:${BIG_VERSION}-$(echo $COMMIT_TIME)
     - echo "============================ EXPORT IMAGE TAGS ============================="
     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
+  after_script:
+    - echo "============================ CLEAN BUILD CACHE ============================="
+    - docker buildx prune -a -f
   artifacts:
     reports:
       dotenv: build.env
