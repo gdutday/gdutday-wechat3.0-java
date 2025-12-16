@@ -43,11 +43,9 @@ sonarqube-check:
     key: "${CI_JOB_NAME}"
     paths:
       - cache/
-      - .sonar/cache
     policy: pull-push
   script:
     - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -DskipTests -Dmaven.repo.local=cache
-    - chmod -R 777 .sonar/cache
   allow_failure: true
   only:
     - dev
