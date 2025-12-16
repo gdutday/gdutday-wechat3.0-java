@@ -44,6 +44,7 @@ sonarqube-check:
     paths:
       - cache/
       - sonar-scanner/
+    policy: pull-push
   script:
     - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -DskipTests -Dmaven.repo.local=cache
   allow_failure: true
