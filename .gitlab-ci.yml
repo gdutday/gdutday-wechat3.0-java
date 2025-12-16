@@ -132,7 +132,7 @@ maven-build:main:
     - export PACKAGE_NAME=gdutdays.jar
     - export PACKAGE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/gdutdays/${BIG_VERSION}-${COMMIT_TIME}/${PACKAGE_NAME}"
     - echo "Uploading to ${PACKAGE_URL}"
-    - curl --header "PRIVATE-TOKEN:${CI_JOB_TOKEN}" --upload-file server/target/*.jar "${PACKAGE_URL}"
+    - curl --header "PRIVATE-TOKEN:${CI_JOB_TOKEN}" --upload-file target/*.jar "${PACKAGE_URL}"
     # - curl --header "PRIVATE-TOKEN:${PACKAGE_PUBLISH_TOKEN}" --upload-file target/*.jar "https://git.gdutnic.com/api/v4/projects/${CI_PROJECT_ID}/packages/generic/gdutdays/${BIG_VERSION}-${COMMIT_TIME}/gdutdays.jar"
     - echo "=========================== EXPORT VERSION TAGS ============================"
     - echo "PACKAGE_NAME=${PACKAGE_NAME}" >> build.env
