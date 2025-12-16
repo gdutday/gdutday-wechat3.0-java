@@ -47,7 +47,7 @@ sonarqube-check:
     policy: pull-push
   script:
     - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -DskipTests -Dmaven.repo.local=cache
-    - chmod -R 644 .sonar/cache
+    - chmod -R 777 .sonar/cache
   allow_failure: true
   only:
     - dev
