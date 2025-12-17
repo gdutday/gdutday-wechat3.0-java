@@ -219,7 +219,7 @@ docker-build-and-push:
       .
     - echo "=================== ADD ANNOTATIONS TO MANIFEST LIST ======================"
     - |
-      for tag in ${VERSION} latest; do
+      for tag in ${BIG_VERSION}-$(echo $COMMIT_TIME) latest; do
         echo "Adding annotations to ${HARBORHOST}/gdutdays/gdutdays:${tag}"
         docker buildx imagetools create --tag ${HARBORHOST}/gdutdays/gdutdays:${tag} \
           --annotation "index:org.opencontainers.image.created=${IMAGE_CREATED}" \
