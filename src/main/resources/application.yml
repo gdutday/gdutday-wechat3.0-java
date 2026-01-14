@@ -36,6 +36,10 @@ logging:
 
 # Spring配置
 spring:
+  # 应用配置
+  application:
+    # 应用名称
+    name: GDUTDaysServer
   # 资源信息
   messages:
     # 国际化资源文件路径
