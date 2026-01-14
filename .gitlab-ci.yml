@@ -533,6 +533,6 @@ helm-deploy:
     - rm ./gdutdays-helm/values.yaml
     - echo ${VALUES_BASE64} | base64 -d > ./gdutdays-helm/values.yaml
     - echo "=========================== DEPLOY NEW VERSION ============================="
-    - helm upgrade --install gdutdays4 ./gdutdays-helm --namespace gdutdays --set image.tag=${BIG_VERSION}-$(echo $COMMIT_TIME)
+    - helm upgrade --install gdutdays4 ./gdutdays-helm --namespace gdutdays --set image.tag=${BIG_VERSION}-$(echo $COMMIT_TIME) --debug
   only:
     - dev
