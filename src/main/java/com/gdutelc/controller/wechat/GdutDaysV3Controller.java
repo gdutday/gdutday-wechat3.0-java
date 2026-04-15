@@ -10,6 +10,7 @@ import com.gdutelc.domain.DTO.VerCodeDto;
 import com.gdutelc.domain.GdutDayWechatUser;
 import com.gdutelc.domain.VO.LibQrVO;
 import com.gdutelc.framework.domain.AjaxResult;
+import com.gdutelc.service.CetScoreService;
 import com.gdutelc.service.ExamScoreService;
 import com.gdutelc.service.GdutDayService;
 import com.gdutelc.service.impl.LoginServiceImpl;
@@ -47,6 +48,9 @@ public class GdutDaysV3Controller {
 
     @Resource
     private ExamScoreService examScoreService;
+
+    @Resource
+    private CetScoreService cetScoreService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GdutDaysV3Controller.class);
 
@@ -143,6 +147,17 @@ public class GdutDaysV3Controller {
     }
 
     /**
+     * 获取英语考级成绩
+     *
+     * @param baseRequestDto
+     * @return
+     */
+    @PostMapping("/cetScore")
+    public AjaxResult cetScore(@Validated @RequestBody BaseRequestDto baseRequestDto) {
+        return AjaxResult.success(cetScoreService.getCetScore(baseRequestDto));
+    }
+
+    /**
      * 获得用户信息
      *
      * @param baseRequestDto
@@ -193,4 +208,3 @@ public class GdutDaysV3Controller {
         return AjaxResult.success("修改开学时间为：" + date, gdutDayService.changeAdmissionDate(date));
     }
 }
-

@@ -19,7 +19,10 @@ public class UrlConstant {
     public static final String UNDER_CLAZZ = "https://jxfw.gdut.edu.cn/xsgrkbcx!getDataList.action";
     // 本科生获得成绩接口
     public static final String UNDER_EXAME_SCORE = "https://jxfw.gdut.edu.cn/xskccjxx!getDataList.action";
+    // 本科生英语考级成绩接口
+    public static final String UNDER_CET_SCORE = "https://jxfw.gdut.edu.cn/xskjcjxx!getDataList.action";
     public static final String UNDER_REFER = "https://jxfw.gdut.edu.cn/";
+    public static final String UNDER_CET_REFER = "https://jxfw.gdut.edu.cn/xskjcjxx!kjcjList.action";
 
     //    public static final String GRADUATE_REFER = "https://yjsxt.gdut.edu.cn/";
     // 研究生登录链接
