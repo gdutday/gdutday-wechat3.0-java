@@ -58,7 +58,6 @@ public class CetScoreServiceImpl implements CetScoreService {
             dto.setTerm(jsonObject.getString("xnxqmc"));
             dto.setCetLevel(jsonObject.getString("kjkcmc"));
             dto.setTotalScore(jsonObject.getString("zcj"));
-            dto.setTicketNo(jsonObject.getString("zkzh"));
             dto.setPart1Score(jsonObject.getString("xm1cj"));
             dto.setPart2Score(jsonObject.getString("xm2cj"));
             dto.setPart3Score(jsonObject.getString("xm3cj"));

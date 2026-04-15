@@ -7,7 +7,7 @@ import lombok.ToString;
 import java.io.Serializable;
 
 /**
- * @author Ymri
+ * @author xb2555
  * @version 1.0
  * @since 2026/4/15
  * CetScoreDto 英语考级成绩
@@ -31,11 +31,6 @@ public class CetScoreDto implements Serializable {
      * 总成绩
      */
     private String totalScore;
-
-    /**
-     * 准考证号
-     */
-    private String ticketNo;
 
     /**
      * 分项成绩1
