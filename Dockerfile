@@ -6,7 +6,7 @@
 #ENTRYPOINT ["java","-jar","/app.jar","--spring.profiles.active=prod","-XX:+UseZGC","-XX:ZCollectionInterval=120", "-XX:ZAllocationSpikeTolerance=4","-XX:-ZProactive",  "-XX:+HeapDumpOnOutOfMemoryError","-XX:HeapDumpPath=./errorDump.hprof"]
 
 # 使用新的 OpenJ9 运行时
-FROM registry.gdut.edu.cn/library/ibm-semeru-runtimes:open-17.0.17_9-jre-noble
+FROM registry.gdut.edu.cn/docker/library/ibm-semeru-runtimes:open-17.0.17_9-jre-noble
 ARG JAR_FILE=target/*.jar
 ARG IMAGE_CREATED=1970-01-01T00:00:00Z
 ARG IMAGE_VERSION=0.0.0
