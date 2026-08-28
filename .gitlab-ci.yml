@@ -29,10 +29,10 @@ sonarqube-check:
             <localRepository>/cache/.m2</localRepository>
             <mirrors>
               <mirror>
-                <id>nexus-aliyun</id>
+                <id>nexus-gdut</id>
                 <mirrorOf>*</mirrorOf>
-                <name>Nexus aliyun</name>
-                <url>https://mirrors.gdut.edu.cn/nexus/repository/maven-public/</url>
+                <name>Nexus GDUT</name>
+                <url>https://repo.gdut.edu.cn/repository/maven/</url>
               </mirror>
             </mirrors>
             </settings>' > $HOME/.m2/settings.xml || true
@@ -69,10 +69,10 @@ maven-build:dev:
             <localRepository>/cache/.m2</localRepository>
             <mirrors>
               <mirror>
-                <id>nexus-aliyun</id>
+                <id>nexus-gdut</id>
                 <mirrorOf>*</mirrorOf>
-                <name>Nexus aliyun</name>
-                <url>https://mirrors.gdut.edu.cn/nexus/repository/maven-public/</url>
+                <name>Nexus GDUT</name>
+                <url>https://repo.gdut.edu.cn/repository/maven/</url>
               </mirror>
             </mirrors>
             </settings>' > $HOME/.m2/settings.xml || true
@@ -114,10 +114,10 @@ maven-build:main:
             <localRepository>/cache/.m2</localRepository>
             <mirrors>
               <mirror>
-                <id>nexus-aliyun</id>
+                <id>nexus-gdut</id>
                 <mirrorOf>*</mirrorOf>
-                <name>Nexus aliyun</name>
-                <url>https://mirrors.gdut.edu.cn/nexus/repository/maven-public/</url>
+                <name>Nexus GDUT</name>
+                <url>https://repo.gdut.edu.cn/repository/maven/</url>
               </mirror>
             </mirrors>
             </settings>' > $HOME/.m2/settings.xml || true
